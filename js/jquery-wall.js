@@ -23,7 +23,7 @@
                 'img_fadein': 500, // how long each image should take to fade in (ms)
                 'fullscreen_speed': 250, // how long the wall should take to resize (ms)
                 'search_box_default': 'New search', // initial text in the search box
-                'min_category_count': 50, // minimum number of objects a category must have to be displayed in the sidebar panel (because, say 10 objects don't make a good wall)
+                'min_category_count': 30, // minimum number of objects a category must have to be displayed in the sidebar panel (because, say 10 objects don't make a good wall)
                 'browse_prompt': '<strong>Tags:</strong>', // text to prompt user to click categories
                 'padding': 8, // amount of padding to add to elements that require padding
                 'font_family': 'arial,helvetica,freesans,sans-serif', 
@@ -60,7 +60,7 @@
                 'search_category_term': '',
                 'search_category_pk': null,
                 'max_results': 1000, // the max results we can handle
-                'limit': 10, // how many images to get per api request
+                'limit': 25, // how many images to get per api request
                 'search_term': '', // term to search the api for
                 'category-stub': '', // category to retrieve images from 
                 'image_filename_suffix': '_jpg_w',
@@ -466,8 +466,10 @@
                    
                     url = settings.api_stub + $(this).attr('object_number');
                     
-                    //~ $('#fullsize').hide();
+                    $('#fullsize').hide();
                     var sidebar = $("#sidebar", wall);
+                    
+                    //~ $('.sidebar_info', sidebar).scrollTop(0);
                     
                     sidebar.css({
                         'width': settings.sidebar_width,
@@ -543,7 +545,7 @@
                             info_html       += '</ul>';
                             
                             $(".sidebar_image", sidebar).html(sidebar_image);
-                            $(".sidebar_info", sidebar).html(info_html).height(sidebar.height() - $(".sidebar_image").outerHeight() - $(".ui-dialog-titlebar", sidebar).outerHeight());
+                            $(".sidebar_info", sidebar).html(info_html).height(sidebar.height() - $(".sidebar_image").outerHeight() - $(".ui-dialog-titlebar", sidebar).outerHeight()).scrollTop(0);
                             
                             // cache the fullsize img
                             fullsize = new Image();
@@ -666,7 +668,6 @@
                             for(k=0; k < tiles.size(); k++) {
                                 
                                 $(tiles[k]).attr('offset', o);
-                                //~ $(tiles[k]).html(o);
                                 count++;
                                 if(count==num_cols) {
                                     count = 0;
@@ -965,7 +966,8 @@
                             dataType: 'jsonp',
                             url: buildUrl(offset, 1),
                             success: function (json) {
-                                $.each(json.records, function(idx, record){
+                                for(i=0;i<json.records.length;i++) {
+                                    record = json.records[i];
                                     obj = {};
                                     obj.offset = offset;
                                     obj.imref = record.fields.primary_image_id;
@@ -977,7 +979,7 @@
                                     }
                                     obj.title = objname;
                                     cache.push(obj);
-                                });
+                                };
                             }
                         });
                 }
@@ -1002,7 +1004,8 @@
                             dataType: 'jsonp',
                             url: url,
                             success: function (json) {
-                                $.each(json.records, function(idx, record){
+                                for(i=0;i<json.records.length;i++) {
+                                    record = json.records[i];
                                     cache_obj = {};
                                     cache_obj.offset = offset;
                                     cache_obj.imref = record.fields.primary_image_id;
@@ -1015,7 +1018,7 @@
                                     cache_obj.title = objname;
                                     cache.push(cache_obj);
                                     offset ++;
-                                });
+                                };
                                 if(offset >= settings.max_offset && cache.length < settings.max_offset) { offset = 0; };
                                 ajax_in_progress = false;
                                 $("#progressbar").progressbar({ value: cache.length });
