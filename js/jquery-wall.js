@@ -10,10 +10,10 @@
                 'width': 1024, // width of the wall
                 'height': 768, // height of the wall
                 'sizes': [
-                    { 'dim': 130, 'suff': '_jpg_o', 'name': 'Small images', },
-                    { 'dim': 177, 'suff': '_jpg_ws', 'name': 'Medium images', },
-                    { 'dim': 265, 'suff': '_jpg_w', 'name': 'Large images', },
-                    { 'dim': 355, 'suff': '_jpg_ds', 'name': 'X-Large images', }
+                    { 'dim': 130, 'suff': '_jpg_o', 'name': 'Small images' },
+                    { 'dim': 177, 'suff': '_jpg_ws', 'name': 'Medium images' },
+                    { 'dim': 265, 'suff': '_jpg_w', 'name': 'Large images' },
+                    { 'dim': 355, 'suff': '_jpg_ds', 'name': 'X-Large images' }
                 ],
                 'start_size': 2,
                 'tile_margin': 8, // margin around each tile
@@ -194,7 +194,7 @@
                 
                     cursor: 'pointer',
                     delay: 150,
-                    stop: function(event, ui) { 
+                    stop: function() { 
                         draw($(this.parentNode)); // <== 'this' is the draggable, which is $('#grid'), so its parentNode is the wall div
                     }
                     
@@ -206,16 +206,16 @@
 
                 $('#fullsize', wall).draggable({
                     containment: 'parent',
-                    stop: function(event, ui) {
+                    stop: function() {
                         fullsize_dragged = true;
                     }
                 });
 
-                $("#icons li span").mouseover(function(event) {
+                $("#icons li span").mouseover(function() {
                     $(this).parent().addClass('ui-state-hover');
                 });
                 
-                $("#icons li span").mouseout(function(event) {
+                $("#icons li span").mouseout(function() {
                     $(this).parent().removeClass('ui-state-hover');
                 });
                 
@@ -261,8 +261,8 @@
                     } else {
                         // expand
                         wall.animate({
-                            'width': $(document).width(),// * 0.98,
-                            'height': $(window).height(),// * 0.98,
+                            'width': $(document).width(),
+                            'height': $(window).height(),
                             'top': 0,
                             'left': 0
                         }, settings.fullscreen_speed, function() { 
