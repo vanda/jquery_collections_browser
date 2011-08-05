@@ -69,7 +69,7 @@
                 
                 // nuts and bolts
                 'cache_interval': 50, // how often to cache some images (ms)
-                'fill_interval': 500, // how often to fill tiles from cache (ms)
+                'fill_interval': 75, // how often to fill tiles from cache (ms)
                 
                 // list of taxonomy terms to populate the sidebar
                 'taxonomy': [
@@ -872,13 +872,13 @@
                 
                 tiles_removed = 0;
                 while(tiles_removed < remove.left) {
-                    $("#grid ul#grid ul li:first-child").remove();
+                    $("#grid ul li:first-child").remove();
                     tiles_removed ++;
                     grid.css({'left': grid.position().left + settings.cell_width})
                 }
                 tiles_removed = 0;
                 while(tiles_removed < remove.right) {
-                    $("#grid ul#grid ul li:last-child").remove();
+                    $("#grid ul li:last-child").remove();
                     tiles_removed ++;
                 }
                 rows_removed = 0;
@@ -1050,28 +1050,19 @@
             
             function hideLoading() {
                 $('#loading').fadeOut();
-                
-                
             }
             
-            
-            
             function fillTiles(settings, cache) {
-                
-                empties = $("img.blank");
-                if(empties.size() > 0) {
-                    for(m=0; m < empties.size(); m++) {
-                        emp = $(empties[m]);
-                        var item = retrieveFromCache(emp.attr('offset'), cache);
-                        if(item) {
-                            emp.attr('src', getImageUrl(settings.images_url, item.imref))
-                                .attr('alt', item.title + ' [' + item.num + ']')
-                                .attr('title', item.title + ' [' + item.num + ']')
-                                .attr('object_number', item.num)
-                                .fadeIn(settings.img_fadein)
-                                .removeClass('blank');
-                        } 
-                    }
+               
+                emp = $("img.blank:first");
+                var item = retrieveFromCache(emp.attr('offset'), cache);
+                if(item) {
+                    emp.attr('src', getImageUrl(settings.images_url, item.imref))
+                        .attr('alt', item.title + ' [' + item.num + ']')
+                        .attr('title', item.title + ' [' + item.num + ']')
+                        .attr('object_number', item.num)
+                        .fadeIn(settings.img_fadein)
+                        .removeClass('blank');
                 } 
                 
             }

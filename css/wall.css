@@ -1,5 +1,7 @@
 #wall { font-size: 10px!important; }
+/*
 ul { list-style: none; margin: 0; padding: 0; }
+*/
 
 #wall { overflow: hidden; position: relative; margin: 0 auto; }
 #grid { overflow: auto; }
