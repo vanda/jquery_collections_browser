@@ -702,13 +702,30 @@
                 settings.start_cols = Math.ceil(settings.width / settings.cell_width);
                 settings.tile_image_filename_suffix = d.suff;
                 
-                //~ $("#grid ul img", wall).attr('src', '').addClass('blank');
-                
                 $('#grid', wall).html('');
                 $('#panel a.resize').removeClass('selected');
                 $(this).addClass('selected');
                 draw(wall);
-                apiStart(wall, settings);
+                // add offset attributes
+                offset_anchor = 0;
+                num_cols = $("#grid>ul:first li", wall).size();
+                tiles = $('#grid>ul>li>img', wall);
+                count = 0;
+                row = 0;
+                o = offset_anchor;
+                for(k=0; k < tiles.size(); k++) {
+                    
+                    $(tiles[k]).attr('offset', o);
+                    count++;
+                    if(count==num_cols) {
+                        count = 0;
+                        row++;
+                        o = row * settings.grid_width;
+                    } else {
+                        o++;
+                    }
+                    
+                }
                         
             }
             
