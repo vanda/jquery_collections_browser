@@ -26,8 +26,6 @@
                 'min_category_count': 30, // minimum number of objects a category must have to be displayed in the sidebar panel (because, say 10 objects don't make a good wall)
                 'browse_prompt': '<strong>Tags:</strong>', // text to prompt user to click categories
                 'padding': 8, // amount of padding to add to elements that require padding
-                'font_family': 'arial,helvetica,freesans,sans-serif', 
-                'font_size': '12px',
                 'wall_border': '1px solid #a1a1a1',
                 'panel_width': 'auto',
                 'hide_loader_time': 2000, // how long to display the loading dialog after the images are all loaded
@@ -63,18 +61,17 @@
                 'limit': 25, // how many images to get per api request
                 'search_term': '', // term to search the api for
                 'category-stub': '', // category to retrieve images from 
-                'image_filename_suffix': '_jpg_w',
+                'sidebar_image_suffix': '_jpg_w',
                 'large_image_suffix': '_jpg_l',
                 
                 // html fragments
-                'blank_tile': '<li><img class="blank" src="" alt="" offset="n" title="" /></li>',
-                'loader': '<img src="img/spinner_666666_32x32.gif" alt="Loading..." title="Loading..." />',
+                'blank_tile': '<li><img class="blank" src="" alt="" offset="0" title="" /></li>',
                 
                 // nuts and bolts
                 'cache_interval': 50, // how often to cache some images (ms)
                 'fill_interval': 500, // how often to fill tiles from cache (ms)
                 
-                // list of taxonomy terms to populate the popup
+                // list of taxonomy terms to populate the sidebar
                 'taxonomy': [
                     'styles',
                     'collections',
@@ -86,7 +83,6 @@
                     'materials',
                     'categories',
                     'places'
-                    
                 ]
                 
             };
@@ -106,7 +102,7 @@
                 settings.current_size = settings.start_size;
                 settings.tile_width = settings.sizes[settings.current_size].dim;
                 settings.tile_height = settings.sizes[settings.current_size].dim;
-                settings.tile_image_filename_suffix = settings.sizes[settings.current_size].suff;
+                settings.tile_sidebar_image_suffix = settings.sizes[settings.current_size].suff;
                 settings.cell_width = settings.tile_width + settings.tile_margin + 2; // the '2' accounts for borders
                 settings.cell_height = settings.tile_height + settings.tile_margin + 2; 
                 settings.start_rows = Math.ceil(settings.height / settings.cell_height);
@@ -134,8 +130,8 @@
                     'width': settings.width,
                     'height': settings.height,
                     'background-color': settings.background_color,
-                    'font-family': settings.font_family,
-                    'font-size': settings.font_size,
+                    //~ 'font-family': settings.font_family,
+                    //~ 'font-size': settings.font_size,
                     'border': settings.wall_border
                 });
                 $("#grid", wall).css({
@@ -489,7 +485,7 @@
                         success: function (json) {
                             
                             musobj = json[0].fields;
-                            image_url = settings.images_url + musobj.primary_image_id.substr(0, 6) + "/" + musobj.primary_image_id + settings.image_filename_suffix + ".jpg";
+                            image_url = settings.images_url + musobj.primary_image_id.substr(0, 6) + "/" + musobj.primary_image_id + settings.sidebar_image_suffix + ".jpg";
                             objname = musobj.object;
                             objtitle = '<span id="objname" title="Search for \'' + objname +'\'">' + objname + '</span>';
                             if(musobj.title) {
@@ -549,7 +545,7 @@
                             
                             // cache the fullsize img
                             fullsize = new Image();
-                            fullsize.src = image_url.replace(settings.image_filename_suffix, settings.large_image_suffix);
+                            fullsize.src = image_url.replace(settings.sidebar_image_suffix, settings.large_image_suffix);
                             $('#fullsize img', wall).attr('src', fullsize.src);
                             $('#fullsize .ui-dialog-title').html(objname);
                             
@@ -700,7 +696,7 @@
                 settings.cell_height = settings.tile_height + settings.tile_margin + 2; 
                 settings.start_rows = Math.ceil(settings.height / settings.cell_height);
                 settings.start_cols = Math.ceil(settings.width / settings.cell_width);
-                settings.tile_image_filename_suffix = d.suff;
+                settings.tile_sidebar_image_suffix = d.suff;
                 
                 $('#grid', wall).html('');
                 $('#panel a.resize').removeClass('selected');
@@ -744,7 +740,6 @@
                     url = settings.api_stub;
                     url += '?' + settings.search_category_name + '=' + settings.search_category_pk;
                     url += '&getgroup=' + settings.search_category_name;
-                    //~ display_term = ucfirst(settings.search_category_name) + ': ' + ucfirst(settings.search_category_term);
                     display_term = ucfirst(settings.search_category_term);
                     
                 } else {
@@ -948,12 +943,7 @@
                  
                     for(i=0;i<images.size();i++) {
                         
-                        img = $(images[i]);
-                        if(img.attr('offset') == 'n') {
-                            img.attr('offset', o);
-                            //~ img.html(o);
-                        }
-                        
+                        $(images[i]).attr('offset', o);
                         o++;
                         if(o > max) {
                             o = min;
@@ -971,7 +961,7 @@
             }
              
             function getImageUrl(url_base, image_ref) {
-                return url_base + image_ref.substr(0, 6) + "/" + image_ref + settings.tile_image_filename_suffix + ".jpg";
+                return url_base + image_ref.substr(0, 6) + "/" + image_ref + settings.tile_sidebar_image_suffix + ".jpg";
             }
             
             function retrieveFromCache(offset) {
