@@ -1,0 +1,32 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+    
+    <head>
+        
+
+        <link rel="stylesheet" type="text/css" href="http://media.vam.ac.uk/media/css/vam-css/reset.css" media="all" />
+        <link rel="stylesheet" type="text/css" href="css/wall.css" media="all" />
+        <link rel="stylesheet" type="text/css" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.14/themes/pepper-grinder/jquery-ui.css" media="all" />
+        
+        <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
+        <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.14/jquery-ui.min.js"></script>
+        <script type="text/javascript" src="js/jquery-wall.js"></script>
+        
+        <script type="text/javascript">
+            
+            $(document).ready(function() {
+                $("#wall").wall({
+                    'search_term': 'rainbow',
+                    'start_size': 0,
+                    'width': 1024,
+                    'height': 500
+                    });
+            });
+            
+        </script>
+        
+    </head>
+    
+    <body><div id="wall"></div></body>
+    
+</html>
