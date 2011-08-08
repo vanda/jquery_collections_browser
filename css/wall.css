@@ -1,4 +1,4 @@
-#wall { overflow: hidden; position: relative; margin: 0 auto; font-size: 10px!important; }
+#wall { overflow: hidden; position: relative; margin: 0 auto; font-size: 0.7em!important;}
 #grid { overflow: auto; }
 
 #grid ul { width: 100%!important; position: relative; float: left; }
@@ -6,7 +6,7 @@
 #grid ul li.blank { background-image: none!important; }
 
 #sidebar, #dialog, #loading, #fullsize { display: none; }
-#sidebar, #panel, #dialog, #loading, #fullsize { position: absolute; }
+#sidebar, #panel, #dialog, #loading, #fullsize, #title { position: absolute; }
 
 #panel { bottom: 0; z-index: 20; padding: 4px; }
 #panel li { float: left; padding: 4px; margin: 0 4px 0 0; cursor: pointer; }
@@ -28,5 +28,8 @@
 #dialog p, #loading p { margin: 8px; }
 #fullsize { width: auto!important; z-index: 30; }
 #fullsize img { padding: 8px; }
+
+#title { top: 0; left: 0; padding: 8px; width: auto!important; }
+#title h1 { font-size: 1.5em; }
 
 .object-title { line-height: 1.2em; }

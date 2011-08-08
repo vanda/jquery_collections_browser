@@ -175,13 +175,18 @@
                 loading         +=      '<div id="progressbar"></div>';
                 loading         +=      '</div>';
                 
+                // title bar
+                var title       =       '<div class="ui-widget"><div id="title" class="ui-dialog ui-widget ui-widget-content ui-corner-all us-status-highlight">';
+                title           +=      '<h1 class="title_info"></h1>';
+                title           +=      '</div></div>';
+                
                 // fullsize dialog
                 var fs          =       '<div id="fullsize" class="ui-dialog ui-widget ui-widget-content ui-corner-all">';
                 fs              +=       '<div class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix"><span class="ui-dialog-title"></span><a href="#" class="ui-dialog-titlebar-close ui-corner-all" role="button"><span class="ui-icon ui-icon-closethick">close</span></a></div>';
                 fs              +=      '<img src="" alt="" title="" />';
                 fs              +=      '</div>';
                 
-                $("#grid").after(sidebar_html).after(panel).after(dialog).after(loading).after(fs);
+                $("#grid").after(sidebar_html).after(panel).after(dialog).after(loading).after(title).after(fs);
                 var p = $('#panel');
                 p.css({
                     'left': wall.width()/2 - p.width()/2,
@@ -351,7 +356,7 @@
                             'name': '',
                             'term': '',
                         }
-                        
+                        settings.search_term = search_term;
                         apiStart(wall, settings);
                         
                         
@@ -369,6 +374,7 @@
                     var code = (event.keyCode ? event.keyCode : event.which);
                     if(code == 13) { // User has pressed the enter key
                         search_term = $(this).val();
+                        
                         if(search_term!='' && search_term != settings.search_box_default) {
                             
                             settings.category = {
@@ -376,7 +382,7 @@
                                 'name': '',
                                 'term': '',
                             }
-                            
+                            settings.search_term = search_term;
                             apiStart(wall, settings);
 
                         } else {
@@ -647,6 +653,14 @@
                             settings.grid_width = Math.floor(Math.sqrt(settings.num_results));
                             settings.grid_height = settings.grid_width;
                             settings.max_offset = settings.grid_width * settings.grid_height;
+                            
+                            // populate title bar
+                            if(settings.category.id != null) {
+                                var title_text = 'Browsing ' + settings.num_results + ' images for ' + ucfirst(settings.category.name) + ': '+ ucfirst(settings.category.term);
+                            } else {
+                                var title_text = 'Browsing ' + settings.num_results + ' images for "' + settings.search_term + '"';
+                            }
+                            $("#title h1", wall).html(title_text);
                             
                             $("#progressbar").progressbar({ value: 0, max: settings.max_offset });
                             
