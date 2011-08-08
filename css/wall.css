@@ -29,6 +29,7 @@ ul { list-style: none; margin: 0; padding: 0; }
 #sidebar img { cursor: pointer; }
 #sidebar #objname { cursor: pointer; }
 #sidebar #objname:hover { text-decoration: underline; }
+#sidebar .sidebar-image-zoom { position: relative; bottom: 34px; left: 0; }
 
 #dialog p, #loading p { margin: 8px; }
 #fullsize { width: auto!important; z-index: 30; }

@@ -69,7 +69,7 @@
                 
                 // nuts and bolts
                 'cache_interval': 50, // how often to cache some images (ms)
-                'fill_interval': 75, // how often to fill tiles from cache (ms)
+                'fill_interval': 25, // how often to fill tiles from cache (ms)
                 
                 // list of taxonomy terms to populate the sidebar
                 'taxonomy': [
@@ -186,6 +186,7 @@
                 })
                 allow_shuffle = false;
                 fullsize_dragged = false;
+                cache_full = false;
                 
                 apiStart(wall, settings);
                 
@@ -465,8 +466,6 @@
                     $('#fullsize').hide();
                     var sidebar = $("#sidebar", wall);
                     
-                    //~ $('.sidebar_info', sidebar).scrollTop(0);
-                    
                     sidebar.css({
                         'width': settings.sidebar_width,
                         'height': wall.height() - 2*settings.padding,
@@ -522,7 +521,7 @@
                                         category_name = ucfirst(cat.fields['name']);
                                         if( cat.fields['museumobject_count'] > settings.min_category_count && category_name != 'Unknown') {
                                             lines++;
-                                            category_list += '<li><a href="#" category_source="' + cat.model.split('.')[1] + '" category_pk="' + cat.pk + '" category_term="' + category_name + '">' + category_name + '</a></li>';
+                                            category_list += '<li><a href="#" category_source="' + cat.model.split('.')[1] + '" category_pk="' + cat.pk + '" category_term="' + category_name + '" title="Browse images for \'' + category_name + '\'">' + category_name + '</a></li>';
                                         };
                                         
                                     }
@@ -544,9 +543,9 @@
                             $(".sidebar_info", sidebar).html(info_html).height(sidebar.height() - $(".sidebar_image").outerHeight() - $(".ui-dialog-titlebar", sidebar).outerHeight()).scrollTop(0);
                             
                             // cache the fullsize img
-                            fullsize = new Image();
-                            fullsize.src = image_url.replace(settings.sidebar_image_suffix, settings.large_image_suffix);
-                            $('#fullsize img', wall).attr('src', fullsize.src);
+                            var bigimg = new Image();
+                            bigimg.src = image_url.replace(settings.sidebar_image_suffix, settings.large_image_suffix);
+                            $('#fullsize img', wall).attr('src', bigimg.src);
                             $('#fullsize .ui-dialog-title').html(objname);
                             
                         }
@@ -739,7 +738,7 @@
                     
                     url = settings.api_stub;
                     url += '?' + settings.search_category_name + '=' + settings.search_category_pk;
-                    url += '&getgroup=' + settings.search_category_name;
+                    //~ url += '&getgroup=' + settings.search_category_name;
                     display_term = ucfirst(settings.search_category_term);
                     
                 } else {
