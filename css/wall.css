@@ -32,4 +32,8 @@
 #title { top: 0; left: 0; padding: 8px; width: auto!important; }
 #title h1 { font-size: 1.5em; }
 
+/*
+#loading p.results_info { text-align: center; }
+*/
+
 .object-title { line-height: 1.2em; }

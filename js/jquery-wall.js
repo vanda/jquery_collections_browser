@@ -22,9 +22,9 @@
                 'tile_border_color': '#a1a1a1', // colour of tile borders
                 'img_fadein': 500, // how long each image should take to fade in (ms)
                 'fullscreen_speed': 250, // how long the wall should take to resize (ms)
-                'search_box_default': 'New search', // initial text in the search box
+                
                 'min_category_count': 30, // minimum number of objects a category must have to be displayed in the sidebar panel (because, say 10 objects don't make a good wall)
-                'browse_prompt': '<strong>Tags:</strong>', // text to prompt user to click categories
+                
                 'padding': 8, // amount of padding to add to elements that require padding
                 'wall_border': '1px solid #a1a1a1',
                 'panel_width': 'auto',
@@ -32,6 +32,8 @@
                 'fill_direction': 'random', // what order to fill blank tile - values are 'forwards', 'backwards' or 'random'
                 
                 // messaging
+                'browse_prompt': '<strong>Browse images in similar categories:</strong>', // text to prompt user to click categories
+                'search_box_default': 'New search', // initial text in the search box
                 'alert_title': 'Oops',
                 'alert_msg_no_images': 'Sorry, there are not enough images for that search to fill the screen.',
                 'alert_msg_enter_search': 'Please enter a search term and try again.',
@@ -61,7 +63,7 @@
                     'term': '',
                 },
                 'max_results': 1000, // the max results we can handle
-                'limit': 25, // how many images to get per api request
+                'limit': 41, // how many images to get per api request
                 'search_term': '', // term to search the api for
                 'category-stub': '', // category to retrieve images from 
                 'sidebar_image_suffix': '_jpg_w',
@@ -72,7 +74,7 @@
                 
                 // nuts and bolts
                 'cache_interval': 50, // how often to cache some images (ms)
-                'fill_interval': 25, // how often to fill tiles from cache (ms)
+                'fill_interval': 5, // how often to fill tiles from cache (ms)
                 
                 // list of taxonomy terms to populate the sidebar
                 'taxonomy': [
@@ -420,6 +422,7 @@
                             'name': '',
                             'term': '',
                         }
+                        settings.search_term = search_term;
                         apiStart(wall, settings);
 
                     } else {
@@ -608,6 +611,7 @@
                     'left': wall.width()/2 - l.width()/2,
                     'top': wall.height()/2 - l.height()/2
                 });
+                $("span.ui-dialog-title", l).html("Please wait...");
                 l.show();
                 
             }
@@ -665,7 +669,7 @@
                             $("#progressbar").progressbar({ value: 0, max: settings.max_offset });
                             
                             // populate control panel
-                            $('#loading p.results_info', wall).html('Loading <strong><span class="loaded">0</span>/' + settings.display_results + '</strong> images for <strong>' + display_term + '</strong>');
+                            $('#loading p.results_info', wall).html('Loading <strong><span class="loaded">0</span>/' + settings.display_results + '</strong> images');
                             
                             // add offset attributes
                             offset_anchor = 0;
@@ -1063,7 +1067,8 @@
                     setTimeout(hideLoading, settings.hide_loader_time);
                     $("#loading .loaded").html(settings.display_results);
                     r = Math.floor(Math.random()*settings.tips.length);
-                    $("#loading .results_info").html('<span style="float: left; margin-right: .3em;" class="ui-icon ui-icon-info"></span><strong>Tip:</strong> ' + settings.tips[r]);
+                    $('#loading span.ui-dialog-title').html('Done.');
+                    $('#loading .results_info').html('<span style="float: left; margin-right: .3em;" class="ui-icon ui-icon-info"></span><strong>Tip:</strong> ' + settings.tips[r]);
                 }
                 
             }
