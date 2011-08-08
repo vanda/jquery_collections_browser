@@ -29,6 +29,7 @@
                 'wall_border': '1px solid #a1a1a1',
                 'panel_width': 'auto',
                 'hide_loader_time': 2000, // how long to display the loading dialog after the images are all loaded
+                'fill_direction': 'random', // what order to fill blank tile - values are 'forwards', 'backwards' or 'random'
                 
                 // messaging
                 'alert_title': 'Oops',
@@ -53,10 +54,12 @@
                 'api_search_path': 'search',
                 'images_url': 'http://media.vam.ac.uk/media/thira/collection_images/',
                 'collections_record_url': 'http://collections.vam.ac.uk/item/',
-                'search_term': '',
-                'search_category_name': '',
-                'search_category_term': '',
-                'search_category_pk': null,
+                'search_term': '', // the search to display. 
+                'category': { // the category to display
+                    'id': null,
+                    'name': '',
+                    'term': '',
+                },
                 'max_results': 1000, // the max results we can handle
                 'limit': 25, // how many images to get per api request
                 'search_term': '', // term to search the api for
@@ -86,6 +89,8 @@
                 ]
                 
             };
+
+            
 
             var settings = $.extend({}, defaults, options); 
 
@@ -341,9 +346,11 @@
                     search_term = $('#panel input[name="search"]', wall).val();
                     if(search_term!='' && search_term != settings.search_box_default) {
                         
-                        settings.search_category_name = '';
-                        settings.search_category_pk = null;
-                        settings.search_term = search_term;
+                        settings.category = {
+                            'id': null,
+                            'name': '',
+                            'term': '',
+                        }
                         
                         apiStart(wall, settings);
                         
@@ -364,9 +371,11 @@
                         search_term = $(this).val();
                         if(search_term!='' && search_term != settings.search_box_default) {
                             
-                            settings.search_category_name = '';
-                            settings.search_category_pk = null;
-                            settings.search_term = search_term;
+                            settings.category = {
+                                'id': null,
+                                'name': '',
+                                'term': '',
+                            }
                             
                             apiStart(wall, settings);
 
@@ -400,10 +409,11 @@
                     $('#panel input[name="search"]', wall).val(search_term);
                     if(search_term!='' && search_term != settings.search_box_default) {
                         
-                        settings.search_category_name = '';
-                        settings.search_category_pk = null;
-                        settings.search_term = search_term;
-                        
+                        settings.category = {
+                            'id': null,
+                            'name': '',
+                            'term': '',
+                        }
                         apiStart(wall, settings);
 
                     } else {
@@ -554,11 +564,12 @@
                 $('#browse a', wall).live('click', function(event) {
                    
                     event.preventDefault();
-
-                    settings.search_category_name = $(this).attr('category_source');
-                    settings.search_category_term = $(this).attr('category_term');
-                    settings.search_category_pk = $(this).attr('category_pk');
                     
+                    settings.category = {
+                        'id': $(this).attr('category_pk'),
+                        'name': $(this).attr('category_source'),
+                        'term': $(this).attr('category_term'),
+                    }
                     apiStart(wall, settings);
                     
                     $('#panel input[name="search"]', wall).val('New search');
@@ -723,11 +734,12 @@
                     limit = 1;
                 }
                 
-                if(settings.search_category_name && settings.search_category_pk) {
+                if(settings.category.id != null) {
                     
                     url = settings.api_stub;
-                    url += '?' + settings.search_category_name + '=' + settings.search_category_pk;
-                    display_term = ucfirst(settings.search_category_term);
+                    url += '?' + settings.category.name + '=' + settings.category.id;
+                    url += '&getgroup=' + settings.category.name;
+                    display_term = ucfirst(settings.category.term);
                     
                 } else {
                 
@@ -1017,6 +1029,7 @@
                                     }
                                     cache_obj.title = objname;
                                     cache.push(cache_obj);
+                                    
                                     offset ++;
                                 };
                                 if(offset >= settings.max_offset && cache.length < settings.max_offset) { offset = 0; };
@@ -1049,7 +1062,6 @@
                 
                 tile
                     .css({ 'background-image': 'url('+getImageUrl(settings.images_url, item.imref)+')'})
-                    .attr('alt', item.title + ' [' + item.num + ']')
                     .attr('title', item.title + ' [' + item.num + ']')
                     .attr('object_number', item.num)
                     .removeClass('blank');
@@ -1058,10 +1070,24 @@
             
             function fillTiles(settings, cache) {
                
-                tile = $("ul li.blank:first");
-                var item = retrieveFromCache(tile.attr('offset'), cache);
+                switch(settings.fill_direction) {
+                    case 'forwards':
+                        t = $("ul li.blank:first");
+                        break;
+                    case 'backwards':
+                        t = $("ul li.blank:last");
+                        break;
+                    case 'random':
+                        tt = $("ul li.blank");
+                        t = $(tt[Math.floor(Math.random()*tt.length)]);
+                        break;
+                    default:
+                        t = $("ul li.blank:first");
+                        break;
+                }
+                var item = retrieveFromCache(t.attr('offset'), cache);
                 if(item) {
-                    fillTile(tile, item);
+                    fillTile(t, item);
                 } 
                 
             }
