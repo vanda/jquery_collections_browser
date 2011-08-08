@@ -1,15 +1,9 @@
-#wall { font-size: 10px!important; }
-/*
-ul { list-style: none; margin: 0; padding: 0; }
-*/
-
-#wall { overflow: hidden; position: relative; margin: 0 auto; }
+#wall { overflow: hidden; position: relative; margin: 0 auto; font-size: 10px!important; }
 #grid { overflow: auto; }
 
 #grid ul { width: 100%!important; position: relative; float: left; }
-#grid ul li { float: left; border: 1px solid ; background-color: #f1f1f1; }
-#grid ul li img { cursor: pointer; }
-#grid ul li img.blank { display: none; }
+#grid ul li { float: left; border: 1px solid ; background-color: #f1f1f1; cursor: pointer;}
+#grid ul li.blank { background-image: none!important; }
 
 #sidebar, #dialog, #loading, #fullsize { display: none; }
 #sidebar, #panel, #dialog, #loading, #fullsize { position: absolute; }
@@ -34,12 +28,5 @@ ul { list-style: none; margin: 0; padding: 0; }
 #dialog p, #loading p { margin: 8px; }
 #fullsize { width: auto!important; z-index: 30; }
 #fullsize img { padding: 8px; }
-
-/*
-#browse h3 { display: none; }
-#browse ul, #browse li { float: left; padding: 0; margin: 0; }
-#browse a { text-decoration: none; }
-#browse a:hover { text-decoration: underline; }
-*/
 
 .object-title { line-height: 1.2em; }

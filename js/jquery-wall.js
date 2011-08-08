@@ -65,7 +65,7 @@
                 'large_image_suffix': '_jpg_l',
                 
                 // html fragments
-                'blank_tile': '<li><img class="blank" src="" alt="" offset="0" title="" /></li>',
+                'blank_tile': '<li class="blank"></li>',
                 
                 // nuts and bolts
                 'cache_interval': 50, // how often to cache some images (ms)
@@ -130,8 +130,6 @@
                     'width': settings.width,
                     'height': settings.height,
                     'background-color': settings.background_color,
-                    //~ 'font-family': settings.font_family,
-                    //~ 'font-size': settings.font_size,
                     'border': settings.wall_border
                 });
                 $("#grid", wall).css({
@@ -422,23 +420,15 @@
                     
                     if(allow_shuffle) {
                     
-                        $("#grid ul img", wall).attr('src', '').addClass('blank');
                         keys = [];
                         shuffle = [];
                         for(d=0; d<settings.max_offset; d++) { shuffle[Math.random() * 1] = d; }
                         for(r in shuffle) { keys.push(r); };
                         keys.sort();
-                        tiles = $('#grid li img', wall);
+                        tiles = $('#grid li', wall);
                         count = 0;
                         for(k in keys) {
-                            var item = retrieveFromCache(shuffle[keys[k]], cache);
-                            $(tiles[count])
-                                .attr('offset', shuffle[keys[k]])
-                                .attr('src', getImageUrl(settings.images_url, item.imref))
-                                .attr('alt', item.title + ' [' + item.num + ']')
-                                .attr('title', item.title + ' [' + item.num + ']')
-                                .attr('object_number', item.num)
-                                .removeClass('blank')
+                            fillTile($(tiles[count]), retrieveFromCache(shuffle[keys[k]], cache));
                             count ++;
                         }
                         
@@ -449,7 +439,6 @@
                 // close dialog box
                 $('.ui-dialog-titlebar-close', wall).click(function(event) {
                     event.preventDefault();
-                    //~ $('#dialog', wall).hide();
                     $(this).parent().parent().hide();
                 });
                 
@@ -459,7 +448,7 @@
                 });
                 
                 // click on an image and reveal sidebar
-                $('#grid ul li img', wall).live('click', function(event) {
+                $('#grid ul li', wall).live('click', function(event) {
                    
                     url = settings.api_stub + $(this).attr('object_number');
                     
@@ -639,7 +628,7 @@
                             if(typeof(fill_loop_id) != 'undefined') clearInterval(fill_loop_id);
                             if(typeof(cache) != 'undefined') delete cache;
                             offset = 0;
-                            $("#grid ul img", wall).attr('src', '').attr('alt', '').addClass('blank');
+                            $("#grid ul li", wall).addClass('blank');
                         
                             // from the result count set the grid size
                             settings.num_results = (json.meta.result_count > settings.max_results) ? settings.max_results : json.meta.result_count;
@@ -656,7 +645,7 @@
                             // add offset attributes
                             offset_anchor = 0;
                             num_cols = $("#grid>ul:first li", wall).size();
-                            tiles = $('#grid>ul>li>img', wall);
+                            tiles = $('#grid>ul>li', wall);
                             count = 0;
                             row = 0;
                             o = offset_anchor;
@@ -704,7 +693,7 @@
                 // add offset attributes
                 offset_anchor = 0;
                 num_cols = $("#grid>ul:first li", wall).size();
-                tiles = $('#grid>ul>li>img', wall);
+                tiles = $('#grid>ul>li', wall);
                 count = 0;
                 row = 0;
                 o = offset_anchor;
@@ -738,7 +727,6 @@
                     
                     url = settings.api_stub;
                     url += '?' + settings.search_category_name + '=' + settings.search_category_pk;
-                    //~ url += '&getgroup=' + settings.search_category_name;
                     display_term = ucfirst(settings.search_category_term);
                     
                 } else {
@@ -798,7 +786,7 @@
             
                 // before we do anything, let's get the current anchor offset
                 
-                offset_anchor = $("#grid ul:first li:first img").attr('offset');
+                offset_anchor = $("#grid ul:first li:first", wall).attr('offset');
             
                 // is there any blank space inside the wall?
                 var grid = $("#grid", wall);
@@ -935,14 +923,14 @@
                         o -= settings.max_offset;
                     }
                  
-                    images = $("img", rows[j]);
+                    tiles = $("li", rows[j]);
                     
                     min = Math.floor(o/settings.grid_width) * settings.grid_width;
                     max = min + settings.grid_width -1;
                  
-                    for(i=0;i<images.size();i++) {
+                    for(i=0;i<tiles.size();i++) {
                         
-                        $(images[i]).attr('offset', o);
+                        $(tiles[i]).attr('offset', o);
                         o++;
                         if(o > max) {
                             o = min;
@@ -960,7 +948,13 @@
             }
              
             function getImageUrl(url_base, image_ref) {
-                return url_base + image_ref.substr(0, 6) + "/" + image_ref + settings.tile_sidebar_image_suffix + ".jpg";
+                
+                try {
+                    u = url_base + image_ref.substr(0, 6) + "/" + image_ref + settings.tile_sidebar_image_suffix + ".jpg";
+                } catch(err) {
+                    u = "";
+                }
+                return u;
             }
             
             function retrieveFromCache(offset) {
@@ -1051,17 +1045,23 @@
                 $('#loading').fadeOut();
             }
             
+            function fillTile(tile, item) {
+                
+                tile
+                    .css({ 'background-image': 'url('+getImageUrl(settings.images_url, item.imref)+')'})
+                    .attr('alt', item.title + ' [' + item.num + ']')
+                    .attr('title', item.title + ' [' + item.num + ']')
+                    .attr('object_number', item.num)
+                    .removeClass('blank');
+                
+            }
+            
             function fillTiles(settings, cache) {
                
-                emp = $("img.blank:first");
-                var item = retrieveFromCache(emp.attr('offset'), cache);
+                tile = $("ul li.blank:first");
+                var item = retrieveFromCache(tile.attr('offset'), cache);
                 if(item) {
-                    emp.attr('src', getImageUrl(settings.images_url, item.imref))
-                        .attr('alt', item.title + ' [' + item.num + ']')
-                        .attr('title', item.title + ' [' + item.num + ']')
-                        .attr('object_number', item.num)
-                        .fadeIn(settings.img_fadein)
-                        .removeClass('blank');
+                    fillTile(tile, item);
                 } 
                 
             }
