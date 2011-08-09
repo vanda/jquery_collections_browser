@@ -32,7 +32,7 @@
                 'fill_direction': 'random', // what order to fill blank tile - values are 'forwards', 'backwards' or 'random'
                 
                 // messaging
-                'browse_prompt': '<strong>Browse images in similar categories:</strong>', // text to prompt user to click categories
+                'browse_prompt': '<strong>Find images with similar tags:</strong>', // text to prompt user to click categories
                 'search_box_default': 'New search', // initial text in the search box
                 'alert_title': 'Oops',
                 'alert_msg_no_images': 'Sorry, there are not enough images for that search to fill the screen.',
@@ -88,6 +88,16 @@
                     'materials',
                     'categories',
                     'places'
+                ],
+                
+                // fields to display in sidebar
+                'tombstone': [
+                    ['Artist', 'artist' ],
+                    ['Date', 'date_text' ],
+                    ['Museum no.', 'museum_number' ],
+                    ['Materials &amp; techniques', 'materials_techniques'],
+                    ['Location', 'location'],
+                    ['History note', 'history_note']
                 ]
                 
             };
@@ -188,7 +198,9 @@
                 fs              +=      '<img src="" alt="" title="" />';
                 fs              +=      '</div>';
                 
-                $("#grid").after(sidebar_html).after(panel).after(dialog).after(loading).after(title).after(fs);
+                var disabled     =       '<div id="disabled"></div>';
+                
+                $("#grid").after(sidebar_html).after(panel).after(dialog).after(loading).after(title).after(fs).after(disabled);
                 var p = $('#panel');
                 p.css({
                     'left': wall.width()/2 - p.width()/2,
@@ -410,10 +422,10 @@
                     
                 });
                 
-                // search from object title
-                $('#sidebar .object-title', wall).click(function(event) {
+                // search text
+                $('.searchable', wall).live('click', function(event) {
                    
-                    search_term = $("#objname").html();
+                    search_term = $(this).html();
                     $('#panel input[name="search"]', wall).val(search_term);
                     if(search_term!='' && search_term != settings.search_box_default) {
                         
@@ -474,6 +486,8 @@
                     $('#fullsize').hide();
                     var sidebar = $("#sidebar", wall);
                     
+                    
+                    
                     sidebar.css({
                         'width': settings.sidebar_width,
                         'height': wall.height() - 2*settings.padding,
@@ -481,6 +495,16 @@
                         'left': wall.width() - (settings.sidebar_width + 2*settings.padding),
                         'padding': settings.padding
                     });
+                    
+                    var disabled = $("#disabled", wall);
+                    disabled.css({
+                        'width': settings.sidebar_width,
+                        'height': wall.height() - 2*settings.padding,
+                        'top': 0,
+                        'left': wall.width() - (settings.sidebar_width + 2*settings.padding),
+                        'padding': settings.padding,
+                        'z-index': 50
+                    }).show();
                     
                     if(!sidebar.is(':visible')) {
                         sidebar.show();
@@ -494,7 +518,7 @@
                             musobj = json[0].fields;
                             image_url = settings.images_url + musobj.primary_image_id.substr(0, 6) + "/" + musobj.primary_image_id + settings.sidebar_image_suffix + ".jpg";
                             objname = musobj.object;
-                            objtitle = '<span id="objname" title="Search for \'' + objname +'\'">' + objname + '</span>';
+                            objtitle = '<span id="objname" class="searchable" title="Search for \'' + objname +'\'">' + objname + '</span>';
                             if(musobj.title) {
                                 objname += ': ' + musobj.title;
                                 objtitle += ': ' + musobj.title;
@@ -502,16 +526,27 @@
                             
                             var sidebar_image    =  '<img src="' + image_url + '" title="' + objname + '" alt="' + objname + '" width="'+ settings.sidebar_image_size +'" height="'+ settings.sidebar_image_size +'">';
                             $('span.object-title', sidebar).html('<span class="ui-icon ui-icon-search" style="float: left; margin-right: 2px;"></span>'+objtitle);
+
                             var info_html = '';
-                            if(musobj.descriptive_line) {
-                                info_html    +=  '<p>' + musobj.descriptive_line + '</p>';
+                            if(typeof(musobj.descriptive_line) != 'undefined' && musobj.descriptive_line != '' && musobj.descriptive_line != ['Unknown']) { 
+                                info_html += '<div class="ui-widget ui-state-highlight ui-corner-all">' + musobj.descriptive_line + '</div>';
                             }
-                            info_html        +=  '<p>' + ucfirst(musobj.artist) +', ' + musobj.date_text + ', ' + musobj.museum_number + '</p>';
-                            if(musobj.materials_techniques) {
-                                info_html    +=  '<p>' + ucfirst(musobj.materials_techniques) + '</p>';
+                            info_html += '<div class="ui-widget ui-state-highlight ui-corner-all">';
+                            info_html +=    '<ul>';
+                            for(k=0; k<settings.tombstone.length; k++) {
+                                t = settings.tombstone[k][0];
+                                c = settings.tombstone[k][1];
+                                if(typeof(musobj[c]) != 'undefined' && musobj[c] != '' && musobj[c] != ['Unknown']) { 
+                                    info_html += '<li>';
+                                    if(t != '') { info_html += '<strong>'+t + '</strong>: '; };
+                                    info_html += musobj[c];
+                                    info_html += '</li>'; 
+                                };
                             }
-                            info_html        +=  '<p>' + settings.browse_prompt +'</p>';
-                            info_html        +=  '<ul id="browse">';                            
+                            info_html        +=  '</ul></div>';
+                            info_html        += '<div class="ui-widget ui-state-highlight ui-corner-all">';
+                            info_html        +=  '<div class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix"><span class="ui-dialog-title object-title">' + settings.browse_prompt +'</span></div>';
+                            info_html        +=  '<ul id="browse" class="list">';                            
 
                             var lines = 0;
 
@@ -523,7 +558,7 @@
                                     
                                     info_html += '<li><h3>' + taxonomy_title + '</h3>';
                                     lines++;
-                                    category_list = '<ul>';
+                                    category_list = '<ul class="list">';
                                     for( p=0; p < category.length; p++ ) {
                                         cat = category[p];
                                         category_name = ucfirst(cat.fields['name']);
@@ -545,7 +580,7 @@
                                 info_html += '<li>Sorry, no categories for this object.</li>';
                             }
                             
-                            info_html       += '</ul>';
+                            info_html       += '</ul></div>';
                             
                             $(".sidebar_image", sidebar).html(sidebar_image);
                             $(".sidebar_info", sidebar).html(info_html).height(sidebar.height() - $(".sidebar_image").outerHeight() - $(".ui-dialog-titlebar", sidebar).outerHeight()).scrollTop(0);
@@ -555,6 +590,9 @@
                             bigimg.src = image_url.replace(settings.sidebar_image_suffix, settings.large_image_suffix);
                             $('#fullsize img', wall).attr('src', bigimg.src);
                             $('#fullsize .ui-dialog-title').html(objname);
+                            
+                            // remove disabler overlay
+                            disabled.fadeOut();
                             
                         }
                     });

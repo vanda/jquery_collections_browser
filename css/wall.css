@@ -5,25 +5,34 @@
 #grid ul li { float: left; border: 1px solid ; background-color: #f1f1f1; cursor: pointer;}
 #grid ul li.blank { background-image: none!important; }
 
-#sidebar, #dialog, #loading, #fullsize { display: none; }
-#sidebar, #panel, #dialog, #loading, #fullsize, #title { position: absolute; }
+#sidebar, #dialog, #loading, #fullsize, #disabled { display: none; }
+#sidebar, #panel, #dialog, #loading, #fullsize, #title, #disabled { position: absolute; }
 
 #panel { bottom: 0; z-index: 20; padding: 4px; }
 #panel li { float: left; padding: 4px; margin: 0 4px 0 0; cursor: pointer; }
 #panel li:first-child { padding-top: 0px; margin-right: 1px; padding-right: 0px; }
 #panel input { width: 250px; height: 24px; margin: 0; padding: 0; }
 
-#sidebar { z-index: 10 }
-#sidebar div.ui-dialog-titlebar { margin-bottom: 8px; }
+#sidebar { z-index: 10; line-height: 1.5em;}
+#sidebar div.ui-dialog-titlebar, #sidebar div.sidebar_info .ui-widget { margin-bottom: 8px; }
 #sidebar div.sidebar_image img { padding-bottom: 8px; border-bottom: 1px dotted #a1a1a1; margin-bottom: 8px; }
 #sidebar div.sidebar_info { overflow-y: auto; }
-#sidebar ul { margin-left: 0em; margin-bottom: 0.25em; padding-left: 1.0em; }
-#sidebar li { padding: 2px; margin-bottom: 4px; line-height: 1.2em; }
-#sidebar p { margin-bottom: 4px; line-height: 1.2em;}
+#sidebar div.sidebar_info .ui-widget { padding: 8px; }
+
+#sidebar ul.list { margin-bottom: 0.25em; padding-left: 1.0em; }
+#sidebar ul.list li { padding: 0px; margin-bottom: 0px; }
+
+
 #sidebar img { cursor: pointer; }
+/*
 #sidebar #objname { cursor: pointer; }
-#sidebar #objname:hover { text-decoration: underline; }
+*/
+#sidebar ul li a { text-decoration: none; }
+/*
+#sidebar #objname:hover, #sidebar ul li a:hover { text-decoration: underline; }
+*/
 #sidebar .sidebar-image-zoom { position: relative; bottom: 34px; left: 0; }
+
 
 #dialog p, #loading p { margin: 8px; }
 #fullsize { width: auto!important; z-index: 30; }
@@ -32,8 +41,8 @@
 #title { top: 0; left: 0; padding: 8px; width: auto!important; }
 #title h1 { font-size: 1.5em; }
 
-/*
-#loading p.results_info { text-align: center; }
-*/
+#disabled { background-color: #a1a1a1; filter:alpha(opacity=40); opacity:0.4; }
 
 .object-title { line-height: 1.2em; }
+.searchable { text-decoration: none; cursor: pointer;  }
+.searchable:hover, #sidebar ul li a:hover { text-decoration: underline; }
