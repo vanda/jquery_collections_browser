@@ -18,19 +18,11 @@
 #sidebar div.sidebar_image img { padding-bottom: 8px; border-bottom: 1px dotted #a1a1a1; margin-bottom: 8px; }
 #sidebar div.sidebar_info { overflow-y: auto; }
 #sidebar div.sidebar_info .ui-widget { padding: 8px; }
-
 #sidebar ul.list { margin-bottom: 0.25em; padding-left: 1.0em; }
-#sidebar ul.list li { padding: 0px; margin-bottom: 0px; }
-
-
+#sidebar ul.list li { padding: 0px; margin-bottom: 0px;  }
+#sidebar ul.list ul li { margin-left: 1.0em; }
 #sidebar img { cursor: pointer; }
-/*
-#sidebar #objname { cursor: pointer; }
-*/
 #sidebar ul li a { text-decoration: none; }
-/*
-#sidebar #objname:hover, #sidebar ul li a:hover { text-decoration: underline; }
-*/
 #sidebar .sidebar-image-zoom { position: relative; bottom: 34px; left: 0; }
 
 
@@ -42,6 +34,18 @@
 #title h1 { font-size: 1.5em; }
 
 #disabled { background-color: #a1a1a1; filter:alpha(opacity=40); opacity:0.4; }
+
+.tagcloud { text-align: center; margin: 0; line-height: 3.0em; }
+.tagcloud li { display: inline; margin: 8px; word-wrap: break-word; }
+.tagcloud li.size-1 a { font-size: 0.8em; font-weight: 400; }
+.tagcloud li.size-2 a { font-size: 1.0em; font-weight: 500;  }
+.tagcloud li.size-3 a { font-size: 1.2em; font-weight: 600;  }
+.tagcloud li.size-4 a { font-size: 1.4em; font-weight: 700;  }
+.tagcloud li.size-5 a { font-size: 1.6em; font-weight: 800;  }
+.tagcloud li.size-6 a { font-size: 1.8em; font-weight: 900;  }
+/*
+.tagcloud li { margin: 8px; }
+*/
 
 .object-title { line-height: 1.2em; }
 .searchable { text-decoration: none; cursor: pointer;  }

@@ -30,7 +30,8 @@
                 'panel_width': 'auto',
                 'hide_loader_time': 2000, // how long to display the loading dialog after the images are all loaded
                 'fill_direction': 'random', // what order to fill blank tile - values are 'forwards', 'backwards' or 'random'
-                
+                'tag_style': 'list', // how to display the tags - values are 'tagcloud', or 'list'
+                                
                 // messaging
                 'browse_prompt': '<strong>Find images with similar tags:</strong>', // text to prompt user to click categories
                 'search_box_default': 'New search', // initial text in the search box
@@ -537,16 +538,13 @@
                                 t = settings.tombstone[k][0];
                                 c = settings.tombstone[k][1];
                                 if(typeof(musobj[c]) != 'undefined' && musobj[c] != '' && musobj[c] != ['Unknown']) { 
-                                    info_html += '<li>';
-                                    if(t != '') { info_html += '<strong>'+t + '</strong>: '; };
-                                    info_html += musobj[c];
-                                    info_html += '</li>'; 
+                                    info_html += '<li><strong>'+t + '</strong>: ' + musobj[c] +'</li>'; 
                                 };
                             }
                             info_html        +=  '</ul></div>';
-                            info_html        += '<div class="ui-widget ui-state-highlight ui-corner-all">';
-                            info_html        +=  '<div class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix"><span class="ui-dialog-title object-title">' + settings.browse_prompt +'</span></div>';
-                            info_html        +=  '<ul id="browse" class="list">';                            
+                            info_html        += '<div class="ui-widget ui-state-highlight ui-corner-all" id="browse">';
+                            //~ info_html        +=  '<div class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix"><span class="ui-dialog-title object-title">' + settings.browse_prompt +'</span></div>';
+                            info_html        +=  '<ul class="' + settings.tag_style + '">';                            
 
                             var lines = 0;
 
@@ -555,23 +553,23 @@
                                 category = musobj[settings.taxonomy[k]];
                                 if(countGroups(category) > 0) {
                                     taxonomy_title = ucfirst(settings.taxonomy[k]);
-                                    
-                                    info_html += '<li><h3>' + taxonomy_title + '</h3>';
                                     lines++;
-                                    category_list = '<ul class="list">';
+                                    if(settings.tag_style == 'list') {
+                                        info_html += '<li><h3>' + taxonomy_title + '</h3>';
+                                        info_html += '<ul>';
+                                    }
                                     for( p=0; p < category.length; p++ ) {
+                                        // TO DO: algoritmo for tag sizing
+                                        s = Math.floor(Math.random()*6);
                                         cat = category[p];
                                         category_name = ucfirst(cat.fields['name']);
                                         if( cat.fields['museumobject_count'] > settings.min_category_count && category_name != 'Unknown') {
                                             lines++;
-                                            category_list += '<li><a href="#" category_source="' + cat.model.split('.')[1] + '" category_pk="' + cat.pk + '" category_term="' + category_name + '" title="Browse images for \'' + category_name + '\'">' + category_name + '</a></li>';
+                                            info_html += '<li class="size-'+parseInt(s)+'"><a href="#" category_source="' + cat.model.split('.')[1] + '" category_pk="' + cat.pk + '" category_term="' + category_name + '" title="Browse images for \'' + category_name + '\'">' + category_name + '</a></li>';
                                         };
-                                        
                                     }
-                                    category_list += '</ul>';
-                                    info_html += category_list;
+                                    if(settings.tag_style == 'list') info_html += '</ul>';
                                     info_html += '</li>';
-                                    
                                 }
                                 
                             }
@@ -580,7 +578,7 @@
                                 info_html += '<li>Sorry, no categories for this object.</li>';
                             }
                             
-                            info_html       += '</ul></div>';
+                            info_html       += '</ul><div class="clearfix"></div></div>';
                             
                             $(".sidebar_image", sidebar).html(sidebar_image);
                             $(".sidebar_info", sidebar).html(info_html).height(sidebar.height() - $(".sidebar_image").outerHeight() - $(".ui-dialog-titlebar", sidebar).outerHeight()).scrollTop(0);
