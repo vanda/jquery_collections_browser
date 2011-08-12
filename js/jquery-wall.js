@@ -235,161 +235,183 @@
                     }
                 });
 
-                $("#icons li span").mouseover(function() {
-                    $(this).parent().addClass('ui-state-hover');
-                });
-                
-                $("#icons li span").mouseout(function() {
-                    $(this).parent().removeClass('ui-state-hover');
-                });
-                
-                // - fullscreen
-                $('#panel span.fullscreen', wall).click(function(event) {
-                    event.preventDefault();
-                    
-                    var sidebar = $("#sidebar", wall);
-                    
-                    if (settings.fullscreen) {
-                        // shrink
-                        wall.animate({
-                            'width': settings.width,
-                            'height': settings.height,
-                            'top': settings.start.top,
-                            'left': settings.start.left
-                        }, settings.fullscreen_speed, function() { 
-                            
-                            if(sidebar.is(':visible')) {
-                                sidebar.animate({
-                                    'width': settings.sidebar_width,
-                                    'height': wall.height() - 2*settings.padding,
-                                    'top': 0,
-                                    'left': wall.width() - (settings.sidebar_width + 2*settings.padding),
-                                    'padding': settings.padding
-                                }, settings.fullscreen_speed, function() {});
-                            }
-                            
-                            var p = $('#panel');
-                            p.css({
-                                'left': wall.width()/2 - p.width()/2,
-                                'bottom': 0
-                            })
-                            var l = $('#loading');
-                            l.css({
-                                'left': wall.width()/2 - l.width()/2,
-                            })
-                            settings.fullscreen = false;
-                            draw(wall);
-                            
-                        });
+                wall
+                    .delegate('#icons li span', 'mouseover', function(event) {
+                        $(this).parent().addClass('ui-state-hover');
+                    })
+                    .delegate('#icons li span', 'mouseout', function(event) {
+                        $(this).parent().removeClass('ui-state-hover');
+                    })
+                    .delegate('#panel span.fullscreen', 'click', function(event) {
+                        event.preventDefault();
                         
-                    } else {
-                        // expand
-                        wall.animate({
-                            'width': $(document).width(),
-                            'height': $(window).height(),
-                            'top': 0,
-                            'left': 0
-                        }, settings.fullscreen_speed, function() { 
+                        var sidebar = $("#sidebar", wall);
+                        
+                        if (settings.fullscreen) {
+                            // shrink
+                            wall.animate({
+                                'width': settings.width,
+                                'height': settings.height,
+                                'top': settings.start.top,
+                                'left': settings.start.left
+                            }, settings.fullscreen_speed, function() { 
+                                
+                                if(sidebar.is(':visible')) {
+                                    sidebar.animate({
+                                        'width': settings.sidebar_width,
+                                        'height': wall.height() - 2*settings.padding,
+                                        'top': 0,
+                                        'left': wall.width() - (settings.sidebar_width + 2*settings.padding),
+                                        'padding': settings.padding
+                                    }, settings.fullscreen_speed, function() {});
+                                }
+                                
+                                var p = $('#panel');
+                                p.css({
+                                    'left': wall.width()/2 - p.width()/2,
+                                    'bottom': 0
+                                })
+                                var l = $('#loading');
+                                l.css({
+                                    'left': wall.width()/2 - l.width()/2,
+                                })
+                                settings.fullscreen = false;
+                                draw(wall);
+                                
+                            });
                             
-                            if(sidebar.is(':visible')) {
-                                sidebar.animate({
-                                    'width': settings.sidebar_width,
-                                    'height': wall.height() - 2*settings.padding,
-                                    'top': 0,
-                                    'left': wall.width() - (settings.sidebar_width + 2*settings.padding),
-                                    'padding': settings.padding
-                                }, settings.fullscreen_speed, function(){
-                                    $(".sidebar_info", sidebar).height(sidebar.height() - $(".sidebar_image").height());
-                                });
-                            }
+                        } else {
+                            // expand
+                            wall.animate({
+                                'width': $(document).width(),
+                                'height': $(window).height(),
+                                'top': 0,
+                                'left': 0
+                            }, settings.fullscreen_speed, function() { 
+                                
+                                if(sidebar.is(':visible')) {
+                                    sidebar.animate({
+                                        'width': settings.sidebar_width,
+                                        'height': wall.height() - 2*settings.padding,
+                                        'top': 0,
+                                        'left': wall.width() - (settings.sidebar_width + 2*settings.padding),
+                                        'padding': settings.padding
+                                    }, settings.fullscreen_speed, function(){
+                                        $(".sidebar_info", sidebar).height(sidebar.height() - $(".sidebar_image").height());
+                                    });
+                                }
+                                
+                                var p = $('#panel');
+                                p.css({
+                                    'left': wall.width()/2 - p.width()/2,
+                                    'bottom': 0
+                                })
+                                var l = $('#loading');
+                                l.css({
+                                    'left': wall.width()/2 - l.width()/2,
+                                })
+                                settings.fullscreen = true;
+                                
+                                draw(wall);
+                            });
                             
-                            var p = $('#panel');
-                            p.css({
-                                'left': wall.width()/2 - p.width()/2,
-                                'bottom': 0
-                            })
-                            var l = $('#loading');
-                            l.css({
-                                'left': wall.width()/2 - l.width()/2,
-                            })
-                            settings.fullscreen = true;
-                            
-                            draw(wall);
-                        });
-                        
-                    }
-                    
-                    
-                    
-                });
-                
-                // zoom in
-                $('#panel span.zoomin').click(function(event) {
-                    
-                    event.preventDefault();
-                    
-                    max_size = settings.sizes.length-1;
-                    if(settings.current_size < max_size) {
-                        settings.current_size++;
-                        resize(wall);
-                        
-                    } else {
-                        showDialog(wall, settings.alert_msg_zoom_max);
-                    }
-                    
-                    
-                     
-                });
-                
-                // zoom out
-                $('#panel span.zoomout').click(function(event) {
-                    
-                    event.preventDefault();
-                    
-                    if(settings.current_size > 0) {
-                    
-                        settings.current_size--;
-                        resize(wall);
-                       
-                        
-                    } else {
-                        showDialog(wall, settings.alert_msg_zoom_min);
-                    }
-                     
-                });
-                
-                 // submit search
-                $('#panel span.submitsearch', wall).click(function(event) {
-                    
-                    event.preventDefault();
-                    
-                    search_term = $('#panel input[name="search"]', wall).val();
-                    if(search_term!='' && search_term != settings.search_box_default) {
-                        
-                        settings.category = {
-                            'id': null,
-                            'name': '',
-                            'term': '',
                         }
-                        settings.search_term = search_term;
-                        apiStart(wall, settings);
                         
                         
-                    } else {
-                        showDialog(wall, settings.alert_msg_enter_search);
-                    }
-                    
-                });
-                
-                // - search input
-                $('#panel input[name="search"]', wall).keyup(function(event) {
-                   
-                    event.preventDefault();
-                    
-                    var code = (event.keyCode ? event.keyCode : event.which);
-                    if(code == 13) { // User has pressed the enter key
-                        search_term = $(this).val();
                         
+                    })
+                    .delegate('#panel span.zoomin', 'click', function(event) {
+                        
+                        event.preventDefault();
+                        
+                        max_size = settings.sizes.length-1;
+                        if(settings.current_size < max_size) {
+                            settings.current_size++;
+                            resize(wall);
+                            
+                        } else {
+                            showDialog(wall, settings.alert_msg_zoom_max);
+                        }
+                        
+                        
+                         
+                    })
+                    .delegate('#panel span.zoomout', 'click', function(event) {
+                        
+                        event.preventDefault();
+                        
+                        if(settings.current_size > 0) {
+                        
+                            settings.current_size--;
+                            resize(wall);
+                           
+                            
+                        } else {
+                            showDialog(wall, settings.alert_msg_zoom_min);
+                        }
+                         
+                    })
+                    .delegate('#panel span.submitsearch', 'click', function(event) {
+                        
+                        event.preventDefault();
+                        
+                        search_term = $('#panel input[name="search"]', wall).val();
+                        if(search_term!='' && search_term != settings.search_box_default) {
+                            
+                            settings.category = {
+                                'id': null,
+                                'name': '',
+                                'term': '',
+                            }
+                            settings.search_term = search_term;
+                            apiStart(wall, settings);
+                            
+                            
+                        } else {
+                            showDialog(wall, settings.alert_msg_enter_search);
+                        }
+                        
+                    })
+                    .delegate('#panel input[name="search"]', 'keyup', function(event) {
+                       
+                        event.preventDefault();
+                        
+                        var code = (event.keyCode ? event.keyCode : event.which);
+                        if(code == 13) { // User has pressed the enter key
+                            search_term = $(this).val();
+                            
+                            if(search_term!='' && search_term != settings.search_box_default) {
+                                
+                                settings.category = {
+                                    'id': null,
+                                    'name': '',
+                                    'term': '',
+                                }
+                                settings.search_term = search_term;
+                                apiStart(wall, settings);
+
+                            } else {
+                                showDialog(wall, settings.alert_msg_enter_search);
+                            }
+                        }
+
+                    })
+                    .delegate('#panel input[name="search"]', 'focus', function(event) {
+                        
+                        event.preventDefault();
+                        $(this).val('');
+                        
+                    })
+                    .delegate('#panel input[name="search"]', 'click', function(event) {
+                        
+                        event.preventDefault();
+                        $(this).val('');
+                        
+                    })
+                    .delegate('.searchable', 'click', function(event) {
+                       
+                        search_term = $(this).html();
+                        $('#panel input[name="search"]', wall).val(search_term);
                         if(search_term!='' && search_term != settings.search_box_default) {
                             
                             settings.category = {
@@ -403,240 +425,184 @@
                         } else {
                             showDialog(wall, settings.alert_msg_enter_search);
                         }
-                    }
-
-                });
-                
-                // - search focus
-                $('#panel input[name="search"]', wall).focus(function(event) {
-                    
-                    event.preventDefault();
-                    $(this).val('');
-                    
-                });
-                
-                // - search click
-                $('#panel input[name="search"]', wall).click(function(event) {
-                    
-                    event.preventDefault();
-                    $(this).val('');
-                    
-                });
-                
-                // search text
-                $('.searchable', wall).live('click', function(event) {
-                   
-                    search_term = $(this).html();
-                    $('#panel input[name="search"]', wall).val(search_term);
-                    if(search_term!='' && search_term != settings.search_box_default) {
                         
-                        settings.category = {
-                            'id': null,
-                            'name': '',
-                            'term': '',
-                        }
-                        settings.search_term = search_term;
-                        apiStart(wall, settings);
-
-                    } else {
-                        showDialog(wall, settings.alert_msg_enter_search);
-                    }
-                    
-                });
-                
-                
-                // -shuffle 
-                $('#panel span.shuffle', wall).click(function(event) {
-                   
-                    event.preventDefault();
-                    
-                    if(allow_shuffle) {
-                    
-                        keys = [];
-                        shuffle = [];
-                        for(d=0; d<settings.max_offset; d++) { shuffle[Math.random() * 1] = d; }
-                        for(r in shuffle) { keys.push(r); };
-                        keys.sort();
-                        tiles = $('#grid li', wall);
-                        count = 0;
-                        for(k in keys) {
-                            fillTile($(tiles[count]), retrieveFromCache(shuffle[keys[k]], cache));
-                            count ++;
-                        }
+                    })
+                    .delegate('#panel span.shuffle', 'click', function(event) {
+                       
+                        event.preventDefault();
                         
-                    }
-                    
-                });
-                
-                // close dialog box
-                $('.ui-dialog-titlebar-close', wall).click(function(event) {
-                    event.preventDefault();
-                    $(this).parent().parent().hide();
-                });
-                
-                $('button', wall).click(function(event) {
-                    event.preventDefault();
-                    $('#dialog', wall).hide();
-                });
-                
-                // click on an image and reveal sidebar
-                $('#grid ul li', wall).live('click', function(event) {
-                   
-                    url = settings.api_stub + $(this).attr('object_number');
-                    
-                    $('#fullsize').hide();
-                    var sidebar = $("#sidebar", wall);
-                    
-                    
-                    
-                    sidebar.css({
-                        'width': settings.sidebar_width,
-                        'height': wall.height() - 2*settings.padding,
-                        'top': 0,
-                        'left': wall.width() - (settings.sidebar_width + 2*settings.padding),
-                        'padding': settings.padding
-                    });
-                    
-                    var disabled = $("#disabled", wall);
-                    disabled.css({
-                        'width': settings.sidebar_width,
-                        'height': wall.height() - 2*settings.padding,
-                        'top': 0,
-                        'left': wall.width() - (settings.sidebar_width + 2*settings.padding),
-                        'padding': settings.padding,
-                        'z-index': 50
-                    }).show();
-                    
-                    if(!sidebar.is(':visible')) {
-                        sidebar.show();
-                    }
-                    
-                    $.ajax({
-                        dataType: 'jsonp',
-                        url: url,
-                        success: function (json) {
-                            
-                            musobj = json[0].fields;
-                            image_url = settings.images_url + musobj.primary_image_id.substr(0, 6) + "/" + musobj.primary_image_id + settings.sidebar_image_suffix + ".jpg";
-                            objname = musobj.object;
-                            objtitle = '<span id="objname" class="searchable" title="Search for \'' + objname +'\'">' + objname + '</span>';
-                            if(musobj.title) {
-                                objname += ': ' + musobj.title;
-                                objtitle += ': ' + musobj.title;
+                        if(allow_shuffle) {
+                        
+                            keys = [];
+                            shuffle = [];
+                            for(d=0; d<settings.max_offset; d++) { shuffle[Math.random() * 1] = d; }
+                            for(r in shuffle) { keys.push(r); };
+                            keys.sort();
+                            tiles = $('#grid li', wall);
+                            count = 0;
+                            for(k in keys) {
+                                fillTile($(tiles[count]), retrieveFromCache(shuffle[keys[k]], cache));
+                                count ++;
                             }
                             
-                            var sidebar_image    =  '<img src="' + image_url + '" title="' + objname + '" alt="' + objname + '" width="'+ settings.sidebar_image_size +'" height="'+ settings.sidebar_image_size +'">';
-                            $('span.object-title', sidebar).html('<span class="ui-icon ui-icon-search" style="float: left; margin-right: 2px;"></span>'+objtitle);
-
-                            var info_html = '';
-                            if(typeof(musobj.descriptive_line) != 'undefined' && musobj.descriptive_line != '' && musobj.descriptive_line != ['Unknown']) { 
-                                info_html += '<div class="ui-widget ui-state-highlight ui-corner-all">' + musobj.descriptive_line + '</div>';
-                            }
-                            info_html += '<div class="ui-widget ui-state-highlight ui-corner-all">';
-                            info_html +=    '<ul>';
-                            for(k=0; k<settings.tombstone.length; k++) {
-                                t = settings.tombstone[k][0];
-                                c = settings.tombstone[k][1];
-                                if(typeof(musobj[c]) != 'undefined' && musobj[c] != '' && musobj[c] != ['Unknown']) { 
-                                    info_html += '<li><strong>'+t + '</strong>: ' + musobj[c] +'</li>'; 
-                                };
-                            }
-                            info_html        +=  '</ul></div>';
-                            info_html        += '<div class="ui-widget ui-state-highlight ui-corner-all" id="browse">';
-                            //~ info_html        +=  '<div class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix"><span class="ui-dialog-title object-title">' + settings.browse_prompt +'</span></div>';
-                            info_html        +=  '<ul class="' + settings.tag_style + '">';                            
-
-                            var lines = 0;
-
-                            for( k=0; k<settings.taxonomy.length; k++ ) {
+                        }
+                        
+                    })
+                    .delegate('.ui-dialog-titlebar-close', 'click', function(event) {
+                        event.preventDefault();
+                        $(this).parent().parent().hide();
+                    })
+                    .delegate('button', 'click', function(event) {
+                        event.preventDefault();
+                        $('#dialog', wall).hide();
+                    })
+                    .delegate('#grid ul li', 'click', function(event) { 
+                       
+                        url = settings.api_stub + $(this).attr('object_number');
+                        
+                        $('#fullsize').hide();
+                        var sidebar = $("#sidebar", wall);
+                        
+                        sidebar.css({
+                            'width': settings.sidebar_width,
+                            'height': wall.height() - 2*settings.padding,
+                            'top': 0,
+                            'left': wall.width() - (settings.sidebar_width + 2*settings.padding),
+                            'padding': settings.padding
+                        });
+                        
+                        var disabled = $("#disabled", wall);
+                        disabled.css({
+                            'width': settings.sidebar_width,
+                            'height': wall.height() - 2*settings.padding,
+                            'top': 0,
+                            'left': wall.width() - (settings.sidebar_width + 2*settings.padding),
+                            'padding': settings.padding,
+                            'z-index': 50
+                        }).show();
+                        
+                        if(!sidebar.is(':visible')) {
+                            sidebar.show();
+                        }
+                        
+                        $.ajax({
+                            dataType: 'jsonp',
+                            url: url,
+                            success: function (json) {
                                 
-                                category = musobj[settings.taxonomy[k]];
-                                if(countGroups(category) > 0) {
-                                    taxonomy_title = ucfirst(settings.taxonomy[k]);
-                                    lines++;
-                                    if(settings.tag_style == 'list') {
-                                        info_html += '<li><h3>' + taxonomy_title + '</h3>';
-                                        info_html += '<ul>';
-                                    }
-                                    for( p=0; p < category.length; p++ ) {
-                                        // TO DO: algoritmo for tag sizing
-                                        s = Math.floor(Math.random()*6);
-                                        cat = category[p];
-                                        category_name = ucfirst(cat.fields['name']);
-                                        if( cat.fields['museumobject_count'] > settings.min_category_count && category_name != 'Unknown') {
-                                            lines++;
-                                            info_html += '<li class="size-'+parseInt(s)+'"><a href="#" category_source="' + cat.model.split('.')[1] + '" category_pk="' + cat.pk + '" category_term="' + category_name + '" title="Browse images for \'' + category_name + '\'">' + category_name + '</a></li>';
-                                        };
-                                    }
-                                    if(settings.tag_style == 'list') info_html += '</ul>';
-                                    info_html += '</li>';
+                                musobj = json[0].fields;
+                                image_url = settings.images_url + musobj.primary_image_id.substr(0, 6) + "/" + musobj.primary_image_id + settings.sidebar_image_suffix + ".jpg";
+                                objname = musobj.object;
+                                objtitle = '<span id="objname" class="searchable" title="Search for \'' + objname +'\'">' + objname + '</span>';
+                                if(musobj.title) {
+                                    objname += ': ' + musobj.title;
+                                    objtitle += ': ' + musobj.title;
                                 }
                                 
+                                var sidebar_image    =  '<img src="' + image_url + '" title="' + objname + '" alt="' + objname + '" width="'+ settings.sidebar_image_size +'" height="'+ settings.sidebar_image_size +'">';
+                                $('span.object-title', sidebar).html('<span class="ui-icon ui-icon-search" style="float: left; margin-right: 2px;"></span>'+objtitle);
+
+                                var info_html = '';
+                                if(typeof(musobj.descriptive_line) != 'undefined' && musobj.descriptive_line != '' && musobj.descriptive_line != ['Unknown']) { 
+                                    info_html += '<div class="ui-widget ui-state-highlight ui-corner-all">' + musobj.descriptive_line + '</div>';
+                                }
+                                info_html += '<div class="ui-widget ui-state-highlight ui-corner-all">';
+                                info_html +=    '<ul>';
+                                for(k=0; k<settings.tombstone.length; k++) {
+                                    t = settings.tombstone[k][0];
+                                    c = settings.tombstone[k][1];
+                                    if(typeof(musobj[c]) != 'undefined' && musobj[c] != '' && musobj[c] != ['Unknown']) { 
+                                        info_html += '<li><strong>'+t + '</strong>: ' + musobj[c] +'</li>'; 
+                                    };
+                                }
+                                info_html        +=  '</ul></div>';
+                                info_html        += '<div class="ui-widget ui-state-highlight ui-corner-all" id="browse">';
+                                //~ info_html        +=  '<div class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix"><span class="ui-dialog-title object-title">' + settings.browse_prompt +'</span></div>';
+                                info_html        +=  '<ul class="' + settings.tag_style + '">';                            
+
+                                var lines = 0;
+
+                                for( k=0; k<settings.taxonomy.length; k++ ) {
+                                    
+                                    category = musobj[settings.taxonomy[k]];
+                                    if(countGroups(category) > 0) {
+                                        taxonomy_title = ucfirst(settings.taxonomy[k]);
+                                        lines++;
+                                        if(settings.tag_style == 'list') {
+                                            info_html += '<li><h3>' + taxonomy_title + '</h3>';
+                                            info_html += '<ul>';
+                                        }
+                                        for( p=0; p < category.length; p++ ) {
+                                            // TO DO: algoritmo for tag sizing
+                                            s = Math.floor(Math.random()*6);
+                                            cat = category[p];
+                                            category_name = ucfirst(cat.fields['name']);
+                                            if( cat.fields['museumobject_count'] > settings.min_category_count && category_name != 'Unknown') {
+                                                lines++;
+                                                info_html += '<li class="size-'+parseInt(s)+'"><a href="#" category_source="' + cat.model.split('.')[1] + '" category_pk="' + cat.pk + '" category_term="' + category_name + '" title="Browse images for \'' + category_name + '\'">' + category_name + '</a></li>';
+                                            };
+                                        }
+                                        if(settings.tag_style == 'list') info_html += '</ul>';
+                                        info_html += '</li>';
+                                    }
+                                    
+                                }
+                                
+                                if(lines==0) {
+                                    info_html += '<li>Sorry, no categories for this object.</li>';
+                                }
+                                
+                                info_html       += '</ul><div class="clearfix"></div></div>';
+                                
+                                $(".sidebar_image", sidebar).html(sidebar_image);
+                                $(".sidebar_info", sidebar).html(info_html).height(sidebar.height() - $(".sidebar_image").outerHeight() - $(".ui-dialog-titlebar", sidebar).outerHeight()).scrollTop(0);
+                                
+                                // cache the fullsize img
+                                var bigimg = new Image();
+                                bigimg.src = image_url.replace(settings.sidebar_image_suffix, settings.large_image_suffix);
+                                $('#fullsize img', wall).attr('src', bigimg.src);
+                                $('#fullsize .ui-dialog-title').html(objname);
+                                
+                                // remove disabler overlay
+                                disabled.fadeOut();
+                                
                             }
-                            
-                            if(lines==0) {
-                                info_html += '<li>Sorry, no categories for this object.</li>';
-                            }
-                            
-                            info_html       += '</ul><div class="clearfix"></div></div>';
-                            
-                            $(".sidebar_image", sidebar).html(sidebar_image);
-                            $(".sidebar_info", sidebar).html(info_html).height(sidebar.height() - $(".sidebar_image").outerHeight() - $(".ui-dialog-titlebar", sidebar).outerHeight()).scrollTop(0);
-                            
-                            // cache the fullsize img
-                            var bigimg = new Image();
-                            bigimg.src = image_url.replace(settings.sidebar_image_suffix, settings.large_image_suffix);
-                            $('#fullsize img', wall).attr('src', bigimg.src);
-                            $('#fullsize .ui-dialog-title').html(objname);
-                            
-                            // remove disabler overlay
-                            disabled.fadeOut();
-                            
+                        });
+                    })
+                    .delegate('#sidebar a.close', 'click', function(event) { 
+                     
+                        event.preventDefault();
+                        
+                        $('#sidebar', wall).hide();
+                        
+                    })
+                    .delegate('#browse a', 'click', function(event) { 
+                       
+                        event.preventDefault();
+                        
+                        settings.category = {
+                            'id': $(this).attr('category_pk'),
+                            'name': $(this).attr('category_source'),
+                            'term': $(this).attr('category_term'),
                         }
+                        apiStart(wall, settings);
+                        
+                        $('#panel input[name="search"]', wall).val('New search');
+                
+                    })
+                    .delegate('#sidebar img', 'click', function(event) { 
+                        
+                        event.preventDefault();
+                        
+                        fs = $('#fullsize', wall);
+                        if(!fullsize_dragged) {
+                            fs.css({
+                                'top': 0,
+                                'left': 0 
+                            })
+                        }
+                        fs.show();
                     });
-                });
-                
-                // close the sidebar
-                $('#sidebar a.close', wall).live('click', function(event) {
-                 
-                    event.preventDefault();
-                    
-                    $('#sidebar', wall).hide();
-                    
-                })
-                
-                // click on a category in the info panel and trigger a new search
-                $('#browse a', wall).live('click', function(event) {
-                   
-                    event.preventDefault();
-                    
-                    settings.category = {
-                        'id': $(this).attr('category_pk'),
-                        'name': $(this).attr('category_source'),
-                        'term': $(this).attr('category_term'),
-                    }
-                    apiStart(wall, settings);
-                    
-                    $('#panel input[name="search"]', wall).val('New search');
-            
-                });
-                
-                // show fullsize image
-                $('#sidebar img', wall).live('click', function(event) {
-                    
-                    event.preventDefault();
-                    
-                    fs = $('#fullsize', wall);
-                    if(!fullsize_dragged) {
-                        fs.css({
-                            'top': 0,
-                            'left': 0 
-                        })
-                    }
-                    fs.show();
-                    
-                    
-                });
                 
             }
             
