@@ -69,7 +69,7 @@
                 'category': { // the category to display
                     'id': null,
                     'name': '',
-                    'term': '',
+                    'term': ''
                 },
                 'max_results': 1000, // the max results we can handle
                 'limit': 41, // how many images to get per api request
