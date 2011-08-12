@@ -1,3 +1,11 @@
+/*!
+ * Victoria and Albert Museum Collections Browser jQuery plugin
+ * http://www.vam.ac.uk/
+ *
+ * Copyright 2011, Victoria and Albert Museum
+ * Dual licensed under the MIT or GPL Version 2 licenses.
+ */
+ 
 (function ($) {
     
   $.fn.wall = function(options) { 
