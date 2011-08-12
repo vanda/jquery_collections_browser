@@ -1,4 +1,6 @@
-jquery_collections_browser is a jquery plugin which provides a graphical interface to the Victoria and Albert Museum's collections data and images. It is designed to be simple to implement, whilst offering plenty of customizability and functionality.
+## Introduction ##
+
+jquery_collections_browser is a jquery plugin which provides a graphical interface to the Victoria and Albert Museum's collections data and images opendata API. It is designed to be simple to implement, whilst offering plenty of customizability and functionality.
 
 This plugin is built on jquery, and makes extensive use of jquery-ui for user interface control elements.
 
@@ -11,55 +13,81 @@ Supported browsers:
 ## Installation  ##
 
 First, make sure you're using jQuery and jQuery-UI (1.7+ works). 
-A simple and efficient approach to loading these is to use the minified versions hosted on google cdn:
+An easy way to load them is to use the minified versions hosted on google cdn:
 
-<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
-<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/jquery-ui.min.js"></script>
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/jquery-ui.min.js"></script>
 
-Install the code into your site in a directory named, for example, vanda_browser.
+You also need to load jQuery-UI CSS. You can either load one of the pre-rolled themes yourself from google:
+
+    <link rel="stylesheet" type="text/css" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/smoothness/jquery-ui.css" media="all" />
+    
+or roll your own and host it yourself.
+
+Next, install the code into your site in a directory named, for example, "wall".
 
 Then add the following code to your page:
 
-<link rel="stylesheet" type="text/css" href="css/wall.css" media="all" />
-<script type="text/javascript" src="js/jquery-wall.js"></script>
+    <link rel="stylesheet" type="text/css" href="wall/wall.css" media="all" />
+    <script type="text/javascript" src="wall/wall.js"></script>
 
 Next, add an element to your document to bind the plugin to:
 
-<div id="#wall"></div>
+    <div id="#wall"></div>
 
 Finally, call the function like this:
 
-<script type="text/javascript">
+    <script type="text/javascript">
             
-    $(document).ready(function() {
-        $("#wall").wall({
-            'search_term': 'rainbow',
+        $(document).ready(function() {
+            $("#wall").wall({
+                'search_term': 'rainbow',
+            });
         });
-    });
     
-</script>
+    </script>
 
+This gives you a basic interface, loading images for the search term 'rainbow' (you can pass whatever you like in here of course).
 
-## What's this "wall" function then? ##
+## What's this "wall" all about then? ##
 
-So the plugin queries the V&A's collections API, and builds a grid of images of museum objects from the response. This grid is draggable, and as you drag it, more images are downloaded to fill in the bits of the grid as they come into view. What you have is, if you will, a draggable wall of images. Thus .wall()
+So the plugin queries the V&A's collections API, and builds a grid of images of museum objects from the response. This grid is draggable, and as you drag it, more images are downloaded to fill in the bits of the grid as they come into view. What you have is, if you will, a draggable "wall" of images.
 
 ## Customizing your wall ##
 
-The plugin as initialized above runs off the default settings, which will give you a basic functioning wall. However, there are many settings you can set yourself by passing them to the function like this:
+The plugin as initialized above runs off the default settings, which will give you a basic functioning wall, showing images of objects which match the search term 'rainbow'. However, there are many settings you can set yourself by passing them to the function like this:
 
-<script type="text/javascript">
+    <script type="text/javascript">
             
-    $(document).ready(function() {
-        $("#wall").wall({
-            'start_size': 1,
-            'width': 1000,
-            'height': 600,
-            'search_term': 'rainbow',
-            'fill_direction': 'forwards'
+        $(document).ready(function() {
+            $("#wall").wall({
+                'start_size': 1,
+                'width': 1000,
+                'height': 600,
+                'search_term': 'rainbow',
+                'fill_direction': 'forwards'
             });
-    });
+        });
     
-</script>
+    </script>
 
+## Available settings ##
+
+### search_term ###
+    
+The search term to pass to the plugin on init.
+    
+### category ###
+    
+A category to pass to the plugin, instead of a search term.
+    
+    'category': { // the category to display
+        'id': 419,
+        'name': 'material',
+        'term': 'Sapphire',
+    },
+    
+### start_size ###
+
+To be continued...
 

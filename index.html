@@ -17,10 +17,14 @@
             
             $(document).ready(function() {
                 $("#wall").wall({
-                    'start_size': 1,
+                    'start_size': 0,
                     'width': 1000,
                     'height': 600,
-                    'search_term': 'rainbow',
+                    'category': { // the category to display
+                        'id': 419,
+                        'name': 'material',
+                        'term': 'dfe2',
+                    },
                     'fill_direction': 'forwards'
                     });
             });
