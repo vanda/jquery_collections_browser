@@ -10,10 +10,10 @@ It is built on jquery, and makes extensive use of jquery-ui for user interface c
 
 Supported browsers:
  
-* Firefox 5
+* Firefox 3.6 +
 * Internet Explore 8
-* Chrome
-* Opera
+* Chrome 13
+* Opera 11.5
 
 _If a browser appears in the list, it means we've tested it, and it seems to work fine; it's not an absolute guarantee._ If you spot a problem, let us know.
 
