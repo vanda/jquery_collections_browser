@@ -71,23 +71,11 @@ The plugin as initialized above runs off the default settings, which will give y
     
     </script>
 
-## Available settings ##
+The available settings and how to use them will be documented in due course, but for now please refer to the source code and comments in [jquery-wall.js](https://github.com/vanda/jquery_collections_browser/blob/master/js/jquery-wall.js#L7)
 
-### search_term ###
-    
-The search term to pass to the plugin on init.
-    
-### category ###
-    
-A category to pass to the plugin, instead of a search term.
-    
-    'category': { // the category to display
-        'id': 419,
-        'name': 'material',
-        'term': 'Sapphire',
-    },
-    
-### start_size ###
+## Notes ##
 
-To be continued...
+Please note that there are terms and conditions attached to the use of V&A data and images, which you can read [here](http://collections.vam.ac.uk/information/information_apiterms).
+
+If you have a question, or would like to report a bug or contribute, we'd love to hear from you. Please send all queries to [webmaster@vam.ac.uk](webmaster@vam.ac.uk)
 
