@@ -1,5 +1,65 @@
-Testing. Again.
+jquery_collections_browser is a jquery plugin which provides a graphical interface to the Victoria and Albert Museum's collections data and images. It is designed to be simple to implement, whilst offering plenty of customizability and functionality.
 
-Third test.
+This plugin is built on jquery, and makes extensive use of jquery-ui for user interface control elements.
 
-And another test.
+Supported browsers:
+*Firefox 5
+*Internet Explore 8
+*Chrome
+*Opera
+
+## Installation  ##
+
+First, make sure you're using jQuery and jQuery-UI (1.7+ works). 
+A simple and efficient approach to loading these is to use the minified versions hosted on google cdn:
+
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/jquery-ui.min.js"></script>
+
+Install the code into your site in a directory named, for example, vanda_browser.
+
+Then add the following code to your page:
+
+<link rel="stylesheet" type="text/css" href="css/wall.css" media="all" />
+<script type="text/javascript" src="js/jquery-wall.js"></script>
+
+Next, add an element to your document to bind the plugin to:
+
+<div id="#wall"></div>
+
+Finally, call the function like this:
+
+<script type="text/javascript">
+            
+    $(document).ready(function() {
+        $("#wall").wall({
+            'search_term': 'rainbow',
+        });
+    });
+    
+</script>
+
+
+## What's this "wall" function then? ##
+
+So the plugin queries the V&A's collections API, and builds a grid of images of museum objects from the response. This grid is draggable, and as you drag it, more images are downloaded to fill in the bits of the grid as they come into view. What you have is, if you will, a draggable wall of images. Thus .wall()
+
+## Customizing your wall ##
+
+The plugin as initialized above runs off the default settings, which will give you a basic functioning wall. However, there are many settings you can set yourself by passing them to the function like this:
+
+<script type="text/javascript">
+            
+    $(document).ready(function() {
+        $("#wall").wall({
+            'start_size': 1,
+            'width': 1000,
+            'height': 600,
+            'search_term': 'rainbow',
+            'fill_direction': 'forwards'
+            });
+    });
+    
+</script>
+
+

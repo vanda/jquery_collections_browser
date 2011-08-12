@@ -7,10 +7,10 @@
 
         <link rel="stylesheet" type="text/css" href="http://media.vam.ac.uk/media/css/vam-css/reset.css" media="all" />
         <link rel="stylesheet" type="text/css" href="css/wall.css" media="all" />
-        <link rel="stylesheet" type="text/css" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.14/themes/smoothness/jquery-ui.css" media="all" />
+        <link rel="stylesheet" type="text/css" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/smoothness/jquery-ui.css" media="all" />
         
         <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
-        <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.14/jquery-ui.min.js"></script>
+        <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/jquery-ui.min.js"></script>
         <script type="text/javascript" src="js/jquery-wall.js"></script>
         
         <script type="text/javascript">
@@ -18,14 +18,10 @@
             $(document).ready(function() {
                 $("#wall").wall({
                     'start_size': 1,
-                    'width': 1024,
+                    'width': 1000,
                     'height': 600,
-                    'category': {
-                        'id': 9,
-                        'name': 'place',
-                        'term': 'Sheffield'
-                    },
-                    'fill_direction': 'random'
+                    'search_term': 'rainbow',
+                    'fill_direction': 'forwards'
                     });
             });
             
