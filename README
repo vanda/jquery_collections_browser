@@ -1,14 +1,21 @@
 ## Introduction ##
 
-jquery_collections_browser is a jquery plugin which provides a graphical interface to the Victoria and Albert Museum's collections data and images opendata API. It is designed to be simple to implement, whilst offering plenty of customizability and functionality.
+jquery_collections_browser is a jquery plugin which provides a graphical interface to the Victoria and Albert Museum's collections data and images opendata [API](http://www.vam.ac.uk/api).
 
-This plugin is built on jquery, and makes extensive use of jquery-ui for user interface control elements.
+This data can also be browsed at the [V&A's search the collections site](http://collections.vam.ac.uk)
+
+This plugin is designed to be simple to implement, whilst offering plenty of customizability and functionality.
+
+It is built on jquery, and makes extensive use of jquery-ui for user interface control elements.
 
 Supported browsers:
-*Firefox 5
-*Internet Explore 8
-*Chrome
-*Opera
+ 
+* Firefox 5
+* Internet Explore 8
+* Chrome
+* Opera
+
+_If a browser appears in the list, it means we've tested it, and it seems to work fine; it's not an absolute guarantee._ If you spot a problem, let us know.
 
 ## Installation  ##
 
@@ -24,7 +31,7 @@ You also need to load jQuery-UI CSS. You can either load one of the pre-rolled t
     
 or roll your own and host it yourself.
 
-Next, install the code into your site in a directory named, for example, "wall".
+Next, install the plugin's javascript and css files into your site in a directory named, for example, "wall".
 
 Then add the following code to your page:
 
@@ -51,7 +58,7 @@ This gives you a basic interface, loading images for the search term 'rainbow' (
 
 ## What's this "wall" all about then? ##
 
-So the plugin queries the V&A's collections API, and builds a grid of images of museum objects from the response. This grid is draggable, and as you drag it, more images are downloaded to fill in the bits of the grid as they come into view. What you have is, if you will, a draggable "wall" of images.
+So the plugin queries the [V&A's collections API](http://www.vam.ac.uk/api), and builds a grid of images of museum objects from the response. This grid is draggable, and as you drag it, more images are downloaded to fill in the bits of the grid as they come into view. What you have is, if you will, a draggable "wall" of images.
 
 ## Customizing your wall ##
 
@@ -71,11 +78,13 @@ The plugin as initialized above runs off the default settings, which will give y
     
     </script>
 
-The available settings and how to use them will be documented in due course, but for now please refer to the source code and comments in [jquery-wall.js](https://github.com/vanda/jquery_collections_browser/blob/master/js/jquery-wall.js#L7)
+The available settings and how to use them will be documented in due course, but for now please refer to the source code and comments in [jquery-wall.js](https://github.com/vanda/jquery_collections_browser/blob/master/jquery-wall.js#L7)
 
 ## Notes ##
 
+You may use this plugin under the terms of either the MIT License or the GNU General Public License (GPL) Version 2.
+
 Please note that there are terms and conditions attached to the use of V&A data and images, which you can read [here](http://collections.vam.ac.uk/information/information_apiterms).
 
-If you have a question, or would like to report a bug or contribute, we'd love to hear from you. Please send all queries to [webmaster@vam.ac.uk](webmaster@vam.ac.uk)
+If you have a question, or would like to report a bug or tell us about something we could do better, we'd love to hear from you. Please send all queries to [webmaster@vam.ac.uk](webmaster@vam.ac.uk)
 
