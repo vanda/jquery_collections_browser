@@ -547,7 +547,7 @@
                                             category_name = ucfirst(cat.fields['name']);
                                             if( cat.fields['museumobject_count'] > settings.min_category_count && category_name != 'Unknown') {
                                                 lines++;
-                                                info_html += '<li class="size-'+parseInt(s)+'"><a href="#" category_source="' + cat.model.split('.')[1] + '" category_pk="' + cat.pk + '" category_term="' + category_name + '" title="Browse images for \'' + category_name + '\'">' + category_name + '</a></li>';
+                                                info_html += '<li class="size-'+parseInt(s)+'"><a href="#" data-name="' + cat.model.split('.')[1] + '" data-pk="' + cat.pk + '" data-term="' + category_name + '" title="Browse images for \'' + category_name + '\'">' + category_name + '</a></li>';
                                             };
                                         }
                                         if(settings.tag_style == 'list') info_html += '</ul>';
@@ -589,9 +589,9 @@
                         event.preventDefault();
                         
                         settings.category = {
-                            'id': $(this).attr('category_pk'),
-                            'name': $(this).attr('category_source'),
-                            'term': $(this).attr('category_term'),
+                            'id': $(this).data('pk'),
+                            'name': $(this).data('name'),
+                            'term': $(this).data('term'),
                         }
                         apiStart(wall, settings);
                         
