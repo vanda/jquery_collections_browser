@@ -1,5 +1,6 @@
-#wall { overflow: hidden; position: relative; margin: 0 auto; font-size: 0.7em!important;}
-#grid { overflow: auto; }
+#wall { overflow: hidden; position: absolute; margin: 0 auto; z-index: 999; }
+#wall ul { list-style: none!important; margin: 0px!important;}
+#grid { overflow: hidden; }
 
 #grid ul { width: 100%!important; position: relative; float: left; }
 #grid ul li { float: left; border: 1px solid ; background-color: #f1f1f1; cursor: pointer;}
@@ -8,7 +9,7 @@
 #sidebar, #dialog, #loading, #fullsize, #disabled { display: none; }
 #sidebar, #panel, #dialog, #loading, #fullsize, #title, #disabled { position: absolute; }
 
-#panel { bottom: 0; z-index: 20; padding: 4px; }
+#panel { bottom: 0; z-index: 20; padding: 4px; width: auto; }
 #panel li { float: left; padding: 4px; margin: 0 4px 0 0; cursor: pointer; }
 #panel li:first-child { padding-top: 0px; margin-right: 1px; padding-right: 0px; }
 #panel input { width: 250px; height: 24px; margin: 0; padding: 0; }
@@ -25,13 +26,12 @@
 #sidebar ul li a { text-decoration: none; }
 #sidebar .sidebar-image-zoom { position: relative; bottom: 34px; left: 0; }
 
-
 #dialog p, #loading p { margin: 8px; }
 #fullsize { width: auto!important; z-index: 30; }
 #fullsize img { padding: 8px; }
 
 #title { top: 0; left: 0; padding: 8px; width: auto!important; }
-#title h1 { font-size: 1.5em; }
+#title h1 { font-size: 1.5em; margin: 0!important; }
 
 #disabled { background-color: #a1a1a1; filter:alpha(opacity=40); opacity:0.4; }
 

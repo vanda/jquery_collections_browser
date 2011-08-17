@@ -30,18 +30,16 @@
                 'tile_border_color': '#a1a1a1', // colour of tile borders
                 'img_fadein': 500, // how long each image should take to fade in (ms)
                 'fullscreen_speed': 250, // how long the wall should take to resize (ms)
-                
                 'min_category_count': 30, // minimum number of objects a category must have to be displayed in the sidebar panel (because, say 10 objects don't make a good wall)
-                
                 'padding': 8, // amount of padding to add to elements that require padding
                 'wall_border': '1px solid #a1a1a1',
                 'panel_width': 'auto',
                 'hide_loader_time': 2000, // how long to display the loading dialog after the images are all loaded
                 'fill_direction': 'random', // what order to fill blank tile - values are 'forwards', 'backwards' or 'random'
                 'tag_style': 'list', // how to display the tags - values are 'tagcloud', or 'list'
+                'display_loading': false, // whether to display the loading dialog
                                 
                 // messaging
-                'browse_prompt': '<strong>Find images with similar tags:</strong>', // text to prompt user to click categories
                 'search_box_default': 'New search', // initial text in the search box
                 'alert_title': 'Oops',
                 'alert_msg_no_images': 'Sorry, there are not enough images for that search to fill the screen.',
@@ -119,11 +117,6 @@
 
             function init(wall, settings) {
              
-                // we don't want scrollbars
-                $("body").css({
-                    'overflow': 'hidden'
-                })
-             
                 // sort out some dimensions
                 settings.current_size = settings.start_size;
                 settings.tile_width = settings.sizes[settings.current_size].dim;
@@ -161,7 +154,7 @@
                 $("#grid", wall).css({
                     'width': settings.cell_width * settings.start_cols
                 });
-                styleNewTiles(wall);
+                styleTiles(wall);
 
                 // control panel
                 var panel   =     '<div id="panel" class="ui-widget ui-widget-content ui-corner-all">';
@@ -257,6 +250,11 @@
                         
                         if (settings.fullscreen) {
                             // shrink
+                            
+                            $("#body").css({'overflow': 'auto'});
+                            
+                            wall.prependTo(old_parent);
+                            
                             wall.animate({
                                 'width': settings.width,
                                 'height': settings.height,
@@ -275,6 +273,7 @@
                                 }
                                 
                                 var p = $('#panel');
+                                $("#sidebar").hide();
                                 p.css({
                                     'left': wall.width()/2 - p.width()/2,
                                     'bottom': 0
@@ -285,18 +284,22 @@
                                 })
                                 settings.fullscreen = false;
                                 draw(wall);
-                                
                             });
                             
                         } else {
                             // expand
+                            
+                            old_parent = wall.parent();
+                            wall.prependTo($("body"));
+                            wall.parent().css({'overflow': 'hidden'});
+                            $(window).scrollTop(0);
                             wall.animate({
                                 'width': $(document).width(),
                                 'height': $(window).height(),
                                 'top': 0,
                                 'left': 0
                             }, settings.fullscreen_speed, function() { 
-                                
+                               
                                 if(sidebar.is(':visible')) {
                                     sidebar.animate({
                                         'width': settings.sidebar_width,
@@ -319,7 +322,6 @@
                                     'left': wall.width()/2 - l.width()/2,
                                 })
                                 settings.fullscreen = true;
-                                
                                 draw(wall);
                             });
                             
@@ -525,7 +527,6 @@
                                 }
                                 info_html        +=  '</ul></div>';
                                 info_html        += '<div class="ui-widget ui-state-highlight ui-corner-all" id="browse">';
-                                //~ info_html        +=  '<div class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix"><span class="ui-dialog-title object-title">' + settings.browse_prompt +'</span></div>';
                                 info_html        +=  '<ul class="' + settings.tag_style + '">';                            
 
                                 var lines = 0;
@@ -537,7 +538,7 @@
                                         taxonomy_title = ucfirst(settings.taxonomy[k]);
                                         lines++;
                                         if(settings.tag_style == 'list') {
-                                            info_html += '<li><h3>' + taxonomy_title + '</h3>';
+                                            info_html += '<li><strong>' + taxonomy_title + '</strong>';
                                             info_html += '<ul>';
                                         }
                                         for( p=0; p < category.length; p++ ) {
@@ -653,7 +654,7 @@
                             
                         } else {
                         
-                            showLoading(wall);
+                            if(settings.show_loading) { showLoading(wall); };
                         
                             if(typeof(cache_loop_id) != 'undefined') clearInterval(cache_loop_id);
                             if(typeof(fill_loop_id) != 'undefined') clearInterval(fill_loop_id);
@@ -792,7 +793,7 @@
                 return r;
             }
             
-            function styleNewTiles(wall) {
+            function styleTiles(wall) {
              
                 $('#grid li', wall).css({
                     'width': settings.tile_width,
@@ -831,6 +832,7 @@
                 // is there any blank space inside the wall?
                 var grid = $("#grid", wall);
                 
+                grid.width(grid.width() + wall.position().left + wall.width());
                 tiles = {
                     'above': Math.ceil(grid.position().top / settings.cell_height),
                     'left': Math.ceil(grid.position().left / settings.cell_width),
@@ -881,11 +883,11 @@
                 grid.css({
                     'top': tiles.above > 0 ? grid.position().top - tiles.above * settings.cell_height  : grid.position().top,
                     'left': tiles.left > 0 ? grid.position().left - tiles.left * settings.cell_width : grid.position().left,
-                    'width': $("#grid ul:first > li", wall).size() * settings.cell_width
+                    'width': $("#grid ul:first > li", wall).length * settings.cell_width
                 })
-
+                
                 // make sure all the new tiles are styled up
-                styleNewTiles(wall);
+                styleTiles(wall);
                 
                 // find tiles outside the viewport and remove them
                 remove = {
@@ -919,11 +921,12 @@
                     $("#grid ul:last-child").remove();
                     rows_removed ++;
                 }
-                                
+                            
+                grid.width($("#grid ul:first > li", wall).length * settings.cell_width);
+                            
                 if(do_offsets) {
                     updateOffsets(wall, tiles, remove, settings);
                 }
-                
             };
             
             

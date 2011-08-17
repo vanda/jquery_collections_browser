@@ -6,9 +6,15 @@
         
 
         <link rel="stylesheet" type="text/css" href="http://media.vam.ac.uk/media/css/vam-css/reset.css" media="all" />
-        <link rel="stylesheet" type="text/css" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/smoothness/jquery-ui.css" media="all" />
+        <link rel="stylesheet" type="text/css" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/pepper-grinder/jquery-ui.css" media="all" />
         <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
         <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/jquery-ui.min.js"></script>
+        
+        <style>
+            
+            #wrapper { width: 960px; margin: 0 auto; }
+            
+        </style>
         
         <link rel="stylesheet" type="text/css" href="wall.css" media="all" />
         <script type="text/javascript" src="wall.min.js"></script>
@@ -18,14 +24,11 @@
             $(document).ready(function() {
                 $("#wall").wall({
                     'start_size': 0,
-                    'width': 800,
-                    'height': 600,
-                    'category': { // the category to display
-                        'id': 183,
-                        'name': 'material',
-                        'term': 'diamond',
-                    },
-                    'fill_direction': 'forwards'
+                    'width': 960,
+                    'height': 610,
+                    'search_term': 'constable watercolour',
+                    'fill_direction': 'random',
+                    'show_loading': true
                     });
             });
             
@@ -33,6 +36,13 @@
         
     </head>
     
-    <body><div id="wall"></div></body>
+    <body>
+    
+        <div id="wrapper">
+            <div id="wall"></div>
+        </div>
+        
+    </body>
+        
     
 </html>
