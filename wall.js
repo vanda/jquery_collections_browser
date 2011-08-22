@@ -119,11 +119,11 @@
              
                 // sort out some dimensions
                 settings.current_size = settings.start_size;
-                settings.tile_width = settings.sizes[settings.current_size].dim;
-                settings.tile_height = settings.sizes[settings.current_size].dim;
+                settings.tile_w = settings.sizes[settings.current_size].dim;
+                settings.tile_h = settings.sizes[settings.current_size].dim;
                 settings.tile_sidebar_image_suffix = settings.sizes[settings.current_size].suff;
-                settings.cell_w = settings.tile_width + settings.tile_margin + 2; // the '2' accounts for borders
-                settings.cell_h = settings.tile_height + settings.tile_margin + 2; 
+                settings.cell_w = settings.tile_w + settings.tile_margin + 2; // the '2' accounts for borders
+                settings.cell_h = settings.tile_h + settings.tile_margin + 2; 
                 settings.start_rows = Math.ceil(settings.height / settings.cell_h);
                 settings.start_cols = Math.ceil(settings.width / settings.cell_w);
              
@@ -712,10 +712,10 @@
             function resize(wall) {
                 
                 d = settings.sizes[settings.current_size];
-                settings.tile_width = d.dim;
-                settings.tile_height = d.dim;
-                settings.cell_w = settings.tile_width + settings.tile_margin + 2; // the '2' accounts for borders
-                settings.cell_h = settings.tile_height + settings.tile_margin + 2; 
+                settings.tile_w = d.dim;
+                settings.tile_h = d.dim;
+                settings.cell_w = settings.tile_w + settings.tile_margin + 2; // the '2' accounts for borders
+                settings.cell_h = settings.tile_h + settings.tile_margin + 2; 
                 settings.start_rows = Math.ceil(settings.height / settings.cell_h);
                 settings.start_cols = Math.ceil(settings.width / settings.cell_w);
                 settings.tile_sidebar_image_suffix = d.suff;
@@ -790,8 +790,8 @@
             function styleTiles(wall) {
              
                 $('#grid li', wall).css({
-                    'width': settings.tile_width,
-                    'height': settings.tile_height,
+                    'width': settings.tile_w,
+                    'height': settings.tile_h,
                     'margin-right': settings.tile_margin,
                     'margin-bottom': settings.tile_margin,
                     'border-color': settings.tile_border_color
