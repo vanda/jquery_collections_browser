@@ -1,4 +1,4 @@
-#wall { overflow: hidden; position: absolute; margin: 0 auto; z-index: 999; }
+#wall { overflow: hidden; position: relative; margin: 0 auto; z-index: 999; }
 #wall ul { list-style: none!important; margin: 0px!important;}
 #grid { overflow: hidden; }
 

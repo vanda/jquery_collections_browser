@@ -250,16 +250,11 @@
                         
                         if (settings.fullscreen) {
                             // shrink
-                            
-                            $("#body").css({'overflow': 'auto'});
-                            
-                            wall.prependTo(old_parent);
-                            
-                            wall.animate({
+                            $("body").css({'overflow': 'auto'});
+                            wall.prependTo(old_parent)
+                                .animate({
                                 'width': settings.width,
                                 'height': settings.height,
-                                'top': settings.start.top,
-                                'left': settings.start.left
                             }, settings.fullscreen_speed, function() { 
                                 
                                 if(sidebar.is(':visible')) {
@@ -272,9 +267,9 @@
                                     }, settings.fullscreen_speed, function() {});
                                 }
                                 
-                                var p = $('#panel');
+                                var p = $('#panel', wall);
                                 $("#sidebar").hide();
-                                p.css({
+                                p.css({'left':0}).css({
                                     'left': wall.width()/2 - p.width()/2,
                                     'bottom': 0
                                 })
@@ -284,6 +279,7 @@
                                 })
                                 settings.fullscreen = false;
                                 draw(wall);
+                                
                             });
                             
                         } else {
@@ -291,13 +287,11 @@
                             
                             old_parent = wall.parent();
                             wall.prependTo($("body"));
-                            wall.parent().css({'overflow': 'hidden'});
+                            $("body").css({'overflow': 'hidden'});
                             $(window).scrollTop(0);
                             wall.animate({
                                 'width': $(document).width(),
                                 'height': $(window).height(),
-                                'top': 0,
-                                'left': 0
                             }, settings.fullscreen_speed, function() { 
                                
                                 if(sidebar.is(':visible')) {
