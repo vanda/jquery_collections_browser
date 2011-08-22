@@ -462,7 +462,7 @@
                     })
                     .delegate('#grid ul li', 'click', function(event) { 
                        
-                        url = settings.api_stub + $(this).attr('object_number');
+                        url = settings.api_stub + $(this).data('objnum');
                         
                         $('#fullsize').hide();
                         var sidebar = $("#sidebar", wall);
@@ -685,7 +685,7 @@
                             o = offset_anchor;
                             for(k=0; k < tiles.size(); k++) {
                                 
-                                $(tiles[k]).attr('offset', o);
+                                $(tiles[k]).data('offset', o);
                                 count++;
                                 if(count==num_cols) {
                                     count = 0;
@@ -733,7 +733,7 @@
                 o = offset_anchor;
                 for(k=0; k < tiles.size(); k++) {
                     
-                    $(tiles[k]).attr('offset', o);
+                    $(tiles[k]).data('offset', o);
                     count++;
                     if(count==num_cols) {
                         count = 0;
@@ -821,7 +821,7 @@
             
                 // before we do anything, let's get the current anchor offset
                 
-                offset_anchor = $("#grid ul:first li:first", wall).attr('offset');
+                offset_anchor = $("#grid ul:first li:first", wall).data('offset');
             
                 // is there any blank space inside the wall?
                 var grid = $("#grid", wall);
@@ -967,7 +967,7 @@
                  
                     for(i=0;i<tiles.size();i++) {
                         
-                        $(tiles[i]).attr('offset', o);
+                        $(tiles[i]).data('offset', o);
                         o++;
                         if(o > max) {
                             o = min;
@@ -1089,7 +1089,7 @@
                 tile
                     .css({ 'background-image': 'url('+getImageUrl(settings.images_url, item.imref)+')'})
                     .attr('title', item.title + ' [' + item.num + ']')
-                    .attr('object_number', item.num)
+                    .data('objnum', item.num)
                     .removeClass('blank');
                 
             }
@@ -1111,7 +1111,7 @@
                         t = $("ul li.blank:first");
                         break;
                 }
-                var item = retrieveFromCache(t.attr('offset'), cache);
+                var item = retrieveFromCache(t.data('offset'), cache);
                 if(item) {
                     fillTile(t, item);
                 } 
