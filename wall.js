@@ -122,10 +122,10 @@
                 settings.tile_width = settings.sizes[settings.current_size].dim;
                 settings.tile_height = settings.sizes[settings.current_size].dim;
                 settings.tile_sidebar_image_suffix = settings.sizes[settings.current_size].suff;
-                settings.cell_width = settings.tile_width + settings.tile_margin + 2; // the '2' accounts for borders
-                settings.cell_height = settings.tile_height + settings.tile_margin + 2; 
-                settings.start_rows = Math.ceil(settings.height / settings.cell_height);
-                settings.start_cols = Math.ceil(settings.width / settings.cell_width);
+                settings.cell_w = settings.tile_width + settings.tile_margin + 2; // the '2' accounts for borders
+                settings.cell_h = settings.tile_height + settings.tile_margin + 2; 
+                settings.start_rows = Math.ceil(settings.height / settings.cell_h);
+                settings.start_cols = Math.ceil(settings.width / settings.cell_w);
              
                 settings.sidebar_width = settings.sidebar_image_size;
              
@@ -152,7 +152,7 @@
                     'border': settings.wall_border
                 });
                 $("#grid", wall).css({
-                    'width': settings.cell_width * settings.start_cols
+                    'width': settings.cell_w * settings.start_cols
                 });
                 styleTiles(wall);
 
@@ -714,10 +714,10 @@
                 d = settings.sizes[settings.current_size];
                 settings.tile_width = d.dim;
                 settings.tile_height = d.dim;
-                settings.cell_width = settings.tile_width + settings.tile_margin + 2; // the '2' accounts for borders
-                settings.cell_height = settings.tile_height + settings.tile_margin + 2; 
-                settings.start_rows = Math.ceil(settings.height / settings.cell_height);
-                settings.start_cols = Math.ceil(settings.width / settings.cell_width);
+                settings.cell_w = settings.tile_width + settings.tile_margin + 2; // the '2' accounts for borders
+                settings.cell_h = settings.tile_height + settings.tile_margin + 2; 
+                settings.start_rows = Math.ceil(settings.height / settings.cell_h);
+                settings.start_cols = Math.ceil(settings.width / settings.cell_w);
                 settings.tile_sidebar_image_suffix = d.suff;
                 
                 $('#grid', wall).html('');
@@ -828,35 +828,35 @@
                 
                 grid.width(grid.width() + wall.position().left + wall.width());
                 tiles = {
-                    'above': Math.ceil(grid.position().top / settings.cell_height),
-                    'left': Math.ceil(grid.position().left / settings.cell_width),
-                    'below': Math.ceil((wall.height() - grid.position().top + grid.height()) / settings.cell_height),
-                    'right': Math.ceil((grid.position().left + grid.width()) / settings.cell_width)
+                    'N': Math.ceil(grid.position().top / settings.cell_h),
+                    'S': Math.ceil((wall.height() - grid.position().top + grid.height()) / settings.cell_h),
+                    'E': Math.ceil((grid.position().left + grid.width()) / settings.cell_w),
+                    'W': Math.ceil(grid.position().left / settings.cell_w)
                 }
                 for(prop in tiles) { tiles[prop] = tiles[prop] <0 ? 0 : tiles[prop]; }
                 
                 do_offsets = false;
                 
                 // add new rows to top
-                if(tiles.above) {
-                    for(i=0;i<tiles.above;i++) {
+                if(tiles.N) {
+                    for(i=0;i<tiles.N;i++) {
                         grid.prepend(drawEmptyRow($("#grid ul:first > li", wall).size()));
                     }
                     do_offsets = true;
                 }
                 
                 // add new rows to bottom
-                if(tiles.below) {
-                    for(i=0;i<tiles.below;i++) {
+                if(tiles.S) {
+                    for(i=0;i<tiles.S;i++) {
                         grid.append(drawEmptyRow($("#grid ul:first > li", wall).size()));
                     }
                     do_offsets = true;
                 }
                 
                 // add new cols to left
-                if(tiles.left) {
+                if(tiles.W) {
                     tl = '';
-                    for(i=0;i<tiles.left;i++) {
+                    for(i=0;i<tiles.W;i++) {
                         tl += settings.blank_tile;
                     }
                     $("#grid ul", wall).prepend(tl);
@@ -864,9 +864,9 @@
                 }
                 
                 // add new cols to right
-                if(tiles.right) {
+                if(tiles.E) {
                     tr = '';
-                    for(i=0;i<tiles.right;i++) {
+                    for(i=0;i<tiles.E;i++) {
                         tr += settings.blank_tile;
                     }
                     $("#grid ul", wall).append(tr);
@@ -875,9 +875,9 @@
                 
                 // reposition and resize the grid AFTER adding new tiles
                 grid.css({
-                    'top': tiles.above > 0 ? grid.position().top - tiles.above * settings.cell_height  : grid.position().top,
-                    'left': tiles.left > 0 ? grid.position().left - tiles.left * settings.cell_width : grid.position().left,
-                    'width': $("#grid ul:first > li", wall).length * settings.cell_width
+                    'top': tiles.N > 0 ? grid.position().top - tiles.N * settings.cell_h  : grid.position().top,
+                    'left': tiles.W > 0 ? grid.position().left - tiles.W * settings.cell_w : grid.position().left,
+                    'width': $("#grid ul:first > li", wall).length * settings.cell_w
                 })
                 
                 // make sure all the new tiles are styled up
@@ -885,38 +885,38 @@
                 
                 // find tiles outside the viewport and remove them
                 remove = {
-                    'left': Math.floor(grid.position().left * -1 / settings.cell_width),
-                    'right': Math.floor((grid.width() - wall.width() + grid.position().left) / settings.cell_width),
-                    'top': Math.floor(grid.position().top * -1 / settings.cell_height),
-                    'bottom': Math.floor( (grid.height() - wall.height() + grid.position().top) / settings.cell_height)
+                    'N': Math.floor(grid.position().top * -1 / settings.cell_h),
+                    'S': Math.floor( (grid.height() - wall.height() + grid.position().top) / settings.cell_h),
+                    'E': Math.floor((grid.width() - wall.width() + grid.position().left) / settings.cell_w),
+                    'W': Math.floor(grid.position().left * -1 / settings.cell_w)
                 }
                 
                 for(p in remove) { remove[p] = remove[p] < 0 ? 0 : remove[p]; };
                 
                 tiles_removed = 0;
-                while(tiles_removed < remove.left) {
+                while(tiles_removed < remove.W) {
                     $("#grid ul li:first-child").remove();
                     tiles_removed ++;
-                    grid.css({'left': grid.position().left + settings.cell_width})
+                    grid.css({'left': grid.position().left + settings.cell_w})
                 }
                 tiles_removed = 0;
-                while(tiles_removed < remove.right) {
+                while(tiles_removed < remove.E) {
                     $("#grid ul li:last-child").remove();
                     tiles_removed ++;
                 }
                 rows_removed = 0;
-                while(rows_removed < remove.top) {
+                while(rows_removed < remove.N) {
                     $("#grid ul:first-child").remove();
                     rows_removed ++;
-                    grid.css({'top': grid.position().top + settings.cell_height})
+                    grid.css({'top': grid.position().top + settings.cell_h})
                 }
                 rows_removed = 0;
-                while(rows_removed < remove.bottom) {
+                while(rows_removed < remove.S) {
                     $("#grid ul:last-child").remove();
                     rows_removed ++;
                 }
                             
-                grid.width($("#grid ul:first > li", wall).length * settings.cell_width);
+                grid.width($("#grid ul:first > li", wall).length * settings.cell_w);
                             
                 if(do_offsets) {
                     updateOffsets(wall, tiles, remove, settings);
@@ -928,22 +928,22 @@
             
                 offset_anchor = parseInt(offset_anchor);
                 
-                if(tiles.above > 0) {
-                    offset_anchor -= settings.grid_width * tiles.above;
+                if(tiles.N > 0) {
+                    offset_anchor -= settings.grid_width * tiles.N;
                     if(offset_anchor < 0) {
                         offset_anchor += settings.max_offset;
                     }
                 }
                 
-                if(tiles.left > 0) {
+                if(tiles.W > 0) {
                     min = Math.floor(offset_anchor/settings.grid_width) * settings.grid_width;
                     max = min + settings.grid_width -1;
-                    offset_anchor -= tiles.left;
+                    offset_anchor -= tiles.W;
                     if(offset_anchor < min) { offset_anchor += settings.grid_width };
                 }
                 
-                offset_anchor += remove.left;
-                offset_anchor -= remove.top * settings.grid_width;
+                offset_anchor += remove.W;
+                offset_anchor -= remove.N * settings.grid_width;
                 
                 // TODO: fix this:
                 if(offset_anchor < 0) offset_anchor = 0;
