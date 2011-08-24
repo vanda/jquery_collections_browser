@@ -31,9 +31,7 @@
 #fullsize img { padding: 8px; }
 
 #title { top: 0; left: 0; padding: 8px; width: auto!important; }
-#title h1 { font-size: 1.5em; margin: 0!important; }
-
-#disabled { background-color: #a1a1a1; filter:alpha(opacity=40); opacity:0.4; }
+#title p { margin: 0!important; font-weight: 800; }
 
 .tagcloud { text-align: center; margin: 0; line-height: 3.0em; }
 .tagcloud li { display: inline; margin: 8px; word-wrap: break-word; }
@@ -43,9 +41,6 @@
 .tagcloud li.size-4 a { font-size: 1.4em; font-weight: 700;  }
 .tagcloud li.size-5 a { font-size: 1.6em; font-weight: 800;  }
 .tagcloud li.size-6 a { font-size: 1.8em; font-weight: 900;  }
-/*
-.tagcloud li { margin: 8px; }
-*/
 
 .object-title { line-height: 1.2em; }
 .searchable { text-decoration: none; cursor: pointer;  }

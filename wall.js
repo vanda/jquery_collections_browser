@@ -37,7 +37,8 @@
                 'hide_loader_time': 2000, // how long to display the loading dialog after the images are all loaded
                 'fill_direction': 'random', // what order to fill blank tile - values are 'forwards', 'backwards' or 'random'
                 'tag_style': 'list', // how to display the tags - values are 'tagcloud', or 'list'
-                'display_loading': false, // whether to display the loading dialog
+                'show_loading': false, // whether to display the loading dialog
+                'show_more_link': false, // whether to display the link to the item details page in the sidebar
                                 
                 // messaging
                 'search_box_default': 'New search', // initial text in the search box
@@ -46,6 +47,7 @@
                 'alert_msg_enter_search': 'Please enter a search term and try again.',
                 'alert_msg_zoom_max': 'Sorry, cannot zoom in any further.',
                 'alert_msg_zoom_min': 'Sorry, cannot zoom out any further.',
+                'title_no_term': 'Showing 1000 selected images.', // what to display in the title bar if there is no search term
                 'tips': [
                     'Try dragging the image grid to reveal more images.',
                     'You can change the size of the tiles using the zoom buttons in the panel below.',
@@ -105,7 +107,22 @@
                     ['Materials &amp; techniques', 'materials_techniques'],
                     ['Location', 'location'],
                     ['History note', 'history_note']
-                ]
+                ],
+                
+                'event_click_sidebar_img': function(event) { 
+                    
+                    event.preventDefault();
+                        
+                    fs = $('#fullsize', "#wall");
+                    if(!fullsize_dragged) {
+                        fs.css({
+                            'top': 0,
+                            'left': 0 
+                        })
+                    }
+                    fs.show();
+                    
+                }
                 
             };
 
@@ -190,9 +207,9 @@
                 loading         +=      '</div>';
                 
                 // title bar
-                var title       =       '<div class="ui-widget"><div id="title" class="ui-dialog ui-widget ui-widget-content ui-corner-all us-status-highlight">';
-                title           +=      '<h1 class="title_info"></h1>';
-                title           +=      '</div></div>';
+                var title       =       '<div id="title" class="ui-dialog ui-widget ui-widget-content ui-corner-all">';
+                title           +=      '<p class="title_info"></p>';
+                title           +=      '</div>';
                 
                 // fullsize dialog
                 var fs          =       '<div id="fullsize" class="ui-dialog ui-widget ui-widget-content ui-corner-all">';
@@ -200,7 +217,7 @@
                 fs              +=      '<img src="" alt="" title="" />';
                 fs              +=      '</div>';
                 
-                var disabled     =       '<div id="disabled"></div>';
+                var disabled     =       '<div id="disabled" class="ui-widget-overlay"></div>';
                 
                 $("#grid").after(sidebar_html).after(panel).after(dialog).after(loading).after(title).after(fs).after(disabled);
                 var p = $('#panel');
@@ -503,10 +520,15 @@
                                     objtitle += ': ' + musobj.title;
                                 }
                                 
-                                var sidebar_image    =  '<img src="' + image_url + '" title="' + objname + '" alt="' + objname + '" width="'+ settings.sidebar_image_size +'" height="'+ settings.sidebar_image_size +'">';
+                                var sidebar_image    =  '<img src="' + image_url + '" title="' + objname + '" alt="' + objname + '" width="'+ settings.sidebar_image_size +'" height="'+ settings.sidebar_image_size +'" data-objnum="' + musobj.object_number + '">';
                                 $('span.object-title', sidebar).html('<span class="ui-icon ui-icon-search" style="float: left; margin-right: 2px;"></span>'+objtitle);
 
-                                var info_html = '';
+                                if(settings.show_more_link) {
+                                    var info_html = '<div class="ui-widget ui-state-highlight ui-corner-all"><span class="ui-icon ui-icon-extlink" style="float:left;"></span><a href="' + settings.collections_record_url + musobj.object_number + '">More details</a></div>';
+                                } else {
+                                
+                                    var info_html = '';
+                                }
                                 if(typeof(musobj.descriptive_line) != 'undefined' && musobj.descriptive_line != '' && musobj.descriptive_line != ['Unknown']) { 
                                     info_html += '<div class="ui-widget ui-state-highlight ui-corner-all">' + musobj.descriptive_line + '</div>';
                                 }
@@ -593,19 +615,7 @@
                         $('#panel input[name="search"]', wall).val('New search');
                 
                     })
-                    .delegate('#sidebar img', 'click', function(event) { 
-                        
-                        event.preventDefault();
-                        
-                        fs = $('#fullsize', wall);
-                        if(!fullsize_dragged) {
-                            fs.css({
-                                'top': 0,
-                                'left': 0 
-                            })
-                        }
-                        fs.show();
-                    });
+                    .delegate('#sidebar img', 'click', settings.event_click_sidebar_img);
                 
             }
             
@@ -664,12 +674,17 @@
                             settings.max_offset = settings.grid_width * settings.grid_height;
                             
                             // populate title bar
+                            
+                            console.log(1, settings.category_id, 2, settings.search_term);
+                            
                             if(settings.category.id != null) {
-                                var title_text = 'Browsing ' + settings.num_results + ' images for ' + ucfirst(settings.category.name) + ': '+ ucfirst(settings.category.term);
+                                var title_text = 'Showing ' + settings.num_results + ' images for <span class="">' + ucfirst(settings.category.name) + ': '+ ucfirst(settings.category.term) + '</span>';
+                            } else if(settings.search_term != '') {
+                                var title_text = 'Showing ' + settings.num_results + ' images for <span class="">' + settings.search_term + '</span>';
                             } else {
-                                var title_text = 'Browsing ' + settings.num_results + ' images for "' + settings.search_term + '"';
+                                var title_text = settings.title_no_term;
                             }
-                            $("#title h1", wall).html(title_text);
+                            $("#title .title_info", wall).html(title_text);
                             
                             $("#progressbar").progressbar({ value: 0, max: settings.max_offset });
                             
