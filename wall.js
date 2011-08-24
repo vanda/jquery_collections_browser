@@ -39,6 +39,8 @@
                 'tag_style': 'list', // how to display the tags - values are 'tagcloud', or 'list'
                 'show_loading': false, // whether to display the loading dialog
                 'show_more_link': false, // whether to display the link to the item details page in the sidebar
+                'enable_history': false, 
+                'enable_clipboard': false,
                 'max_history': 20, // maximum items in history
                                 
                 // messaging
@@ -185,7 +187,8 @@
                 panel       +=    '<li class="ui-state-default ui-corner-all"><span class="shuffle ui-icon ui-icon-shuffle" title="Shuffle images"></span></li>';
                 panel       +=    '<li class="ui-state-default ui-corner-all"><span class="zoomin ui-icon ui-icon-zoomin" title="Larger tiles"></span></li>';
                 panel       +=    '<li class="ui-state-default ui-corner-all"><span class="zoomout ui-icon ui-icon-zoomout" title="Smaller tiles"></span></li>';
-                panel       +=    '<li class="ui-state-default ui-corner-all"><span class="togglehist ui-icon ui-icon-clock" title="Toggle history panel"></span></li>';
+                if(settings.enable_history) { panel += '<li class="ui-state-default ui-corner-all"><span class="togglehist ui-icon ui-icon-clock" title="Toggle history panel"></span></li>' };
+                if(settings.enable_clipboard) { panel += '<li class="ui-state-default ui-corner-all"><span class="toggleclip ui-icon ui-icon-clipboard" title="Toggle clipboard"></span></li>' };
                 panel       +=    '</ul>'
                 panel       +=    '</div>';
                 
@@ -227,9 +230,14 @@
                 hist         +=      '<div id="histlist" class="ui-widget ui-state-highlight ui-corner-all hide"><ul class="list"></ul></div>';
                 hist         +=      '</div>';
                 
+                var clipboard     =       '<div id="clipboard" class="ui-dialog ui-widget ui-widget-content ui-corner-all">';
+                clipboard          += '<div class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix"><span class="ui-dialog-title">Your clipboard</span><a href="#" class="ui-dialog-titlebar-close ui-corner-all" role="button"><span class="ui-icon ui-icon-closethick">close</span></a></div>';
+                clipboard         +=      '<div id="clipboardlist" class="ui-widget ui-state-highlight ui-corner-all hide"><ul class="list"></ul><div class="clearfix"></div></div>';
+                clipboard         +=      '</div>';
+                
                 var disabled     =       '<div id="disabled" class="ui-widget-overlay"></div>';
                 
-                $("#grid").after(sidebar_html).after(panel).after(dialog).after(loading).after(title).after(fs).after(disabled).after(hist);
+                $("#grid").after(sidebar_html).after(panel).after(dialog).after(loading).after(title).after(fs).after(disabled).after(hist).after(clipboard);
                 var p = $('#panel');
                 p.css({
                     'left': wall.width()/2 - p.width()/2,
@@ -239,6 +247,8 @@
                 fullsize_dragged = false;
                 cache_full = false;
                 settings.browse_hist = [];
+                settings.cliplist = [];
+                settings.clipboard = [];
                 
                 apiStart(wall, settings);
                 
@@ -265,6 +275,10 @@
                 });
 
                 $('#hist', wall).draggable({
+                    containment: 'parent'
+                });
+
+                $('#clipboard', wall).draggable({
                     containment: 'parent'
                 });
 
@@ -316,7 +330,6 @@
                             
                         } else {
                             // expand
-                            
                             old_parent = wall.parent();
                             wall.prependTo($("body"));
                             $("body").css({'overflow': 'hidden'});
@@ -353,8 +366,6 @@
                             
                         }
                         
-                        
-                        
                     })
                     .delegate('#panel span.zoomin', 'click', function(event) {
                         
@@ -368,8 +379,6 @@
                         } else {
                             showDialog(wall, settings.alert_msg_zoom_max);
                         }
-                        
-                        
                          
                     })
                     .delegate('#panel span.zoomout', 'click', function(event) {
@@ -387,7 +396,12 @@
                     })
                     .delegate('#panel span.togglehist', 'click', function(event) {
                         
-                        $("#hist", wall).toggle();
+                        $("#hist", wall).toggle('fast');
+                        
+                    })
+                    .delegate('#panel span.toggleclip', 'click', function(event) {
+                        
+                        $("#clipboard", wall).toggle('fast');
                         
                     })
                     .delegate('#panel span.submitsearch', 'click', function(event) {
@@ -511,122 +525,34 @@
                         event.preventDefault();
                         $('#dialog', wall).hide();
                     })
-                    .delegate('#grid ul li', 'click', function(event) { 
-                       
-                        url = settings.api_stub + $(this).data('objnum');
+                    .delegate('#grid ul li', 'click', function(event) { populateSidebar(wall, $(this).data('objnum')); })
+                    .delegate('#sidebar a.save', 'click', function(event) {
                         
-                        $('#fullsize').hide();
-                        var sidebar = $("#sidebar", wall);
+                        event.preventDefault();
                         
-                        sidebar.css({
-                            'width': settings.sidebar_width,
-                            'height': wall.height() - 2*settings.padding,
-                            'top': 0,
-                            'left': wall.width() - (settings.sidebar_width + 2*settings.padding),
-                            'padding': settings.padding
-                        });
+                        objnum = $(this).data('objnum');
+                        imref = $(this).data('imref');
                         
-                        var disabled = $("#disabled", wall);
-                        disabled.css({
-                            'width': settings.sidebar_width,
-                            'height': wall.height() - 2*settings.padding,
-                            'top': 0,
-                            'left': wall.width() - (settings.sidebar_width + 2*settings.padding),
-                            'padding': settings.padding,
-                            'z-index': 50
-                        }).show();
-                        
-                        if(!sidebar.is(':visible')) {
-                            sidebar.show();
+                        clipobj = {
+                            objnum: objnum,
+                            name: $(this).data('name'),
+                            img: settings.images_url + imref.substr(0, 6) + "/" + imref + "_jpg_s.jpg"
                         }
                         
-                        $.ajax({
-                            dataType: 'jsonp',
-                            url: url,
-                            success: function (json) {
-                                
-                                musobj = json[0].fields;
-                                image_url = settings.images_url + musobj.primary_image_id.substr(0, 6) + "/" + musobj.primary_image_id + settings.sidebar_image_suffix + ".jpg";
-                                objname = musobj.object;
-                                objtitle = '<span id="objname" class="searchable" title="Search for \'' + objname +'\'">' + objname + '</span>';
-                                if(musobj.title) {
-                                    objname += ': ' + musobj.title;
-                                    objtitle += ': ' + musobj.title;
-                                }
-                                
-                                var sidebar_image    =  '<img src="' + image_url + '" title="' + objname + '" alt="' + objname + '" width="'+ settings.sidebar_image_size +'" height="'+ settings.sidebar_image_size +'" data-objnum="' + musobj.object_number + '">';
-                                $('span.object-title', sidebar).html('<span class="ui-icon ui-icon-search" style="float: left; margin-right: 2px;"></span>'+objtitle);
+                        if($.inArray($(this).data('objnum'), settings.cliplist) == -1) { 
 
-                                if(settings.show_more_link) {
-                                    var info_html = '<div class="ui-widget ui-state-highlight ui-corner-all"><span class="ui-icon ui-icon-extlink" style="float:left;"></span><a href="' + settings.collections_record_url + musobj.object_number + '">More details</a></div>';
-                                } else {
-                                    var info_html = '';
-                                }
-                                if(typeof(musobj.descriptive_line) != 'undefined' && musobj.descriptive_line != '' && musobj.descriptive_line != ['Unknown']) { 
-                                    info_html += '<div class="ui-widget ui-state-highlight ui-corner-all">' + musobj.descriptive_line + '</div>';
-                                }
-                                info_html += '<div class="ui-widget ui-state-highlight ui-corner-all">';
-                                info_html +=    '<ul>';
-                                for(k=0; k<settings.tombstone.length; k++) {
-                                    t = settings.tombstone[k][0];
-                                    c = settings.tombstone[k][1];
-                                    if(typeof(musobj[c]) != 'undefined' && musobj[c] != '' && musobj[c] != ['Unknown']) { 
-                                        info_html += '<li><strong>'+t + '</strong>: ' + musobj[c] +'</li>'; 
-                                    };
-                                }
-                                info_html        +=  '</ul></div>';
-                                info_html        += '<div class="ui-widget ui-state-highlight ui-corner-all" id="browse">';
-                                info_html        +=  '<ul class="' + settings.tag_style + '">';                            
-
-                                var lines = 0;
-
-                                for( k=0; k<settings.taxonomy.length; k++ ) {
-                                    
-                                    category = musobj[settings.taxonomy[k]];
-                                    if(countGroups(category) > 0) {
-                                        taxonomy_title = ucfirst(settings.taxonomy[k]);
-                                        lines++;
-                                        if(settings.tag_style == 'list') {
-                                            info_html += '<li><strong>' + taxonomy_title + '</strong>';
-                                            info_html += '<ul>';
-                                        }
-                                        for( p=0; p < category.length; p++ ) {
-                                            // TO DO: algoritmo for tag sizing
-                                            s = Math.floor(Math.random()*6);
-                                            cat = category[p];
-                                            category_name = ucfirst(cat.fields['name']);
-                                            if( cat.fields['museumobject_count'] > settings.min_category_count && category_name != 'Unknown') {
-                                                lines++;
-                                                info_html += '<li class="size-'+parseInt(s)+'"><a href="#" data-name="' + cat.model.split('.')[1] + '" data-pk="' + cat.pk + '" data-term="' + category_name + '" title="Browse images for \'' + category_name + '\'">' + category_name + '</a></li>';
-                                            };
-                                        }
-                                        if(settings.tag_style == 'list') info_html += '</ul>';
-                                        info_html += '</li>';
-                                    }
-                                    
-                                }
-                                
-                                if(lines==0) {
-                                    info_html += '<li>Sorry, no categories for this object.</li>';
-                                }
-                                
-                                info_html       += '</ul><div class="clearfix"></div></div>';
-                                
-                                $(".sidebar_image", sidebar).html(sidebar_image);
-                                $(".sidebar_info", sidebar).html(info_html).height(sidebar.height() - $(".sidebar_image").outerHeight() - $(".ui-dialog-titlebar", sidebar).outerHeight()).scrollTop(0);
-                                
-                                // cache the fullsize img
-                                var bigimg = new Image();
-                                bigimg.src = image_url.replace(settings.sidebar_image_suffix, settings.large_image_suffix);
-                                $('#fullsize img', wall).attr('src', bigimg.src);
-                                $('#fullsize .ui-dialog-title').html(objname);
-                                
-                                // remove disabler overlay
-                                disabled.fadeOut();
-                                
-                            }
-                        });
+                            settings.cliplist.push(objnum);
+                            settings.clipboard.push(clipobj);
+                            var clipitem = '<li data-objnum="' + objnum + '">';
+                            clipitem += '<img src="' + clipobj.img + '" alt="' + clipobj.name + '" title="' + clipobj.name + '" />';
+                            clipitem += '</li>';
+                            $("#clipboardlist ul").append(clipitem); 
+                            $("#clipboardlist").show(); 
+                            
+                        }
+                        
                     })
+                    .delegate('#clipboard li', 'click', function(event) { populateSidebar(wall, $(this).data('objnum')); })
                     .delegate('#sidebar a.close', 'click', function(event) { 
                      
                         event.preventDefault();
@@ -649,6 +575,7 @@
                 
                     })
                     .delegate('#sidebar img', 'click', settings.event_click_sidebar_img);
+                    
                 
             }
             
@@ -672,6 +599,127 @@
                     'top': wall.height()/2 - dia.height()/2
                 });
                 dia.show();
+            }
+            
+            function populateSidebar(wall, objnum) {
+                
+                url = settings.api_stub + objnum;
+                        
+                $('#fullsize').hide();
+                var sidebar = $("#sidebar", wall);
+                
+                sidebar.css({
+                    'width': settings.sidebar_width,
+                    'height': wall.height() - 2*settings.padding,
+                    'top': 0,
+                    'left': wall.width() - (settings.sidebar_width + 2*settings.padding),
+                    'padding': settings.padding
+                });
+                
+                var disabled = $("#disabled", wall);
+                disabled.css({
+                    'width': settings.sidebar_width,
+                    'height': wall.height() - 2*settings.padding,
+                    'top': 0,
+                    'left': wall.width() - (settings.sidebar_width + 2*settings.padding),
+                    'padding': settings.padding,
+                    'z-index': 50
+                }).show();
+                
+                if(!sidebar.is(':visible')) {
+                    sidebar.show();
+                }
+                
+                $.ajax({
+                    dataType: 'jsonp',
+                    url: url,
+                    success: function (json) {
+                        
+                        musobj = json[0].fields;
+                        image_url = settings.images_url + musobj.primary_image_id.substr(0, 6) + "/" + musobj.primary_image_id + settings.sidebar_image_suffix + ".jpg";
+                        objname = musobj.object;
+                        objtitle = '<span id="objname" class="searchable" title="Search for \'' + objname +'\'">' + objname + '</span>';
+                        if(musobj.title) {
+                            objname += ': ' + musobj.title;
+                            objtitle += ': ' + musobj.title;
+                        }
+                        
+                        var sidebar_image    =  '<img src="' + image_url + '" title="' + objname + '" alt="' + objname + '" width="'+ settings.sidebar_image_size +'" height="'+ settings.sidebar_image_size +'" data-objnum="' + musobj.object_number + '">';
+                        $('span.object-title', sidebar).html('<span class="ui-icon ui-icon-search" style="float: left; margin-right: 2px;"></span>'+objtitle);
+
+                        if(settings.show_more_link) {
+                            var info_html = '<div class="ui-widget ui-state-highlight ui-corner-all"><div><span class="ui-icon ui-icon-extlink" style="float:left;"></span><a href="' + settings.collections_record_url + musobj.object_number + '">More details</a></div>';
+                            if(settings.enable_clipboard) {
+                                info_html += '<div><span class="ui-icon ui-icon-copy" style="float:left;"></span><a data-name="' + objname + '" data-objnum="' + musobj.object_number + '" data-imref="' + musobj.primary_image_id + '" class="save" href="#" title="Save this object to your clipboard">Save</a></div></div>';
+                            }
+                        } else {
+                            var info_html = '';
+                        }
+                        if(typeof(musobj.descriptive_line) != 'undefined' && musobj.descriptive_line != '' && musobj.descriptive_line != ['Unknown']) { 
+                            info_html += '<div class="ui-widget ui-state-highlight ui-corner-all">' + musobj.descriptive_line + '</div>';
+                        }
+                        info_html += '<div class="ui-widget ui-state-highlight ui-corner-all">';
+                        info_html +=    '<ul>';
+                        for(k=0; k<settings.tombstone.length; k++) {
+                            t = settings.tombstone[k][0];
+                            c = settings.tombstone[k][1];
+                            if(typeof(musobj[c]) != 'undefined' && musobj[c] != '' && musobj[c] != ['Unknown']) { 
+                                info_html += '<li><strong>'+t + '</strong>: ' + musobj[c] +'</li>'; 
+                            };
+                        }
+                        info_html        +=  '</ul></div>';
+                        info_html        += '<div class="ui-widget ui-state-highlight ui-corner-all" id="browse">';
+                        info_html        +=  '<ul class="' + settings.tag_style + '">';                            
+
+                        var lines = 0;
+
+                        for( k=0; k<settings.taxonomy.length; k++ ) {
+                            
+                            category = musobj[settings.taxonomy[k]];
+                            if(countGroups(category) > 0) {
+                                taxonomy_title = ucfirst(settings.taxonomy[k]);
+                                lines++;
+                                if(settings.tag_style == 'list') {
+                                    info_html += '<li><strong>' + taxonomy_title + '</strong>';
+                                    info_html += '<ul>';
+                                }
+                                for( p=0; p < category.length; p++ ) {
+                                    // TO DO: algoritmo for tag sizing
+                                    s = Math.floor(Math.random()*6);
+                                    cat = category[p];
+                                    category_name = ucfirst(cat.fields['name']);
+                                    if( cat.fields['museumobject_count'] > settings.min_category_count && category_name != 'Unknown') {
+                                        lines++;
+                                        info_html += '<li class="size-'+parseInt(s)+'"><a href="#" data-name="' + cat.model.split('.')[1] + '" data-pk="' + cat.pk + '" data-term="' + category_name + '" title="Browse images for \'' + category_name + '\'">' + category_name + '</a></li>';
+                                    };
+                                }
+                                if(settings.tag_style == 'list') info_html += '</ul>';
+                                info_html += '</li>';
+                            }
+                            
+                        }
+                        
+                        if(lines==0) {
+                            info_html += '<li>Sorry, no categories for this object.</li>';
+                        }
+                        
+                        info_html       += '</ul><div class="clearfix"></div></div>';
+                        
+                        $(".sidebar_image", sidebar).html(sidebar_image);
+                        $(".sidebar_info", sidebar).html(info_html).height(sidebar.height() - $(".sidebar_image").outerHeight() - $(".ui-dialog-titlebar", sidebar).outerHeight()).scrollTop(0);
+                        
+                        // cache the fullsize img
+                        var bigimg = new Image();
+                        bigimg.src = image_url.replace(settings.sidebar_image_suffix, settings.large_image_suffix);
+                        $('#fullsize img', wall).attr('src', bigimg.src);
+                        $('#fullsize .ui-dialog-title').html(objname);
+                        
+                        // remove disabler overlay
+                        disabled.fadeOut();
+                        
+                    }
+                });
+                
             }
             
             function apiStart(wall, settings) {
