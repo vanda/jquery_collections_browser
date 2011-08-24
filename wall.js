@@ -39,6 +39,7 @@
                 'tag_style': 'list', // how to display the tags - values are 'tagcloud', or 'list'
                 'show_loading': false, // whether to display the loading dialog
                 'show_more_link': false, // whether to display the link to the item details page in the sidebar
+                'max_history': 20, // maximum items in history
                                 
                 // messaging
                 'search_box_default': 'New search', // initial text in the search box
@@ -57,7 +58,8 @@
                     'You can load images from a category by clicking the category names in the sidebar.',
                     'You can drag this window.',
                     'You can search for similar objects by clicking the object name in the sidebar.',
-                    'The search returns a maximum of 1000 objects.'
+                    'The search returns a maximum of 1000 objects.',
+                    'You can see the list of searches you\'ve done by clicking the toggle history button in the panel.'
                 ],
                 
                 // api stuff
@@ -106,6 +108,7 @@
                     ['Museum no.', 'museum_number' ],
                     ['Materials &amp; techniques', 'materials_techniques'],
                     ['Location', 'location'],
+                    ['Place', 'place'],
                     ['History note', 'history_note']
                 ],
                 
@@ -182,6 +185,7 @@
                 panel       +=    '<li class="ui-state-default ui-corner-all"><span class="shuffle ui-icon ui-icon-shuffle" title="Shuffle images"></span></li>';
                 panel       +=    '<li class="ui-state-default ui-corner-all"><span class="zoomin ui-icon ui-icon-zoomin" title="Larger tiles"></span></li>';
                 panel       +=    '<li class="ui-state-default ui-corner-all"><span class="zoomout ui-icon ui-icon-zoomout" title="Smaller tiles"></span></li>';
+                panel       +=    '<li class="ui-state-default ui-corner-all"><span class="togglehist ui-icon ui-icon-clock" title="Toggle history panel"></span></li>';
                 panel       +=    '</ul>'
                 panel       +=    '</div>';
                 
@@ -217,9 +221,15 @@
                 fs              +=      '<img src="" alt="" title="" />';
                 fs              +=      '</div>';
                 
+                // history panel
+                var hist     =       '<div id="hist" class="ui-dialog ui-widget ui-widget-content ui-corner-all">';
+                hist          += '<div class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix"><span class="ui-dialog-title">Your history</span><a href="#" class="ui-dialog-titlebar-close ui-corner-all" role="button"><span class="ui-icon ui-icon-closethick">close</span></a></div>';
+                hist         +=      '<div id="histlist" class="ui-widget ui-state-highlight ui-corner-all hide"><ul class="list"></ul></div>';
+                hist         +=      '</div>';
+                
                 var disabled     =       '<div id="disabled" class="ui-widget-overlay"></div>';
                 
-                $("#grid").after(sidebar_html).after(panel).after(dialog).after(loading).after(title).after(fs).after(disabled);
+                $("#grid").after(sidebar_html).after(panel).after(dialog).after(loading).after(title).after(fs).after(disabled).after(hist);
                 var p = $('#panel');
                 p.css({
                     'left': wall.width()/2 - p.width()/2,
@@ -228,6 +238,7 @@
                 allow_shuffle = false;
                 fullsize_dragged = false;
                 cache_full = false;
+                settings.browse_hist = [];
                 
                 apiStart(wall, settings);
                 
@@ -251,6 +262,10 @@
                     stop: function() {
                         fullsize_dragged = true;
                     }
+                });
+
+                $('#hist', wall).draggable({
+                    containment: 'parent'
                 });
 
                 wall
@@ -359,8 +374,6 @@
                     })
                     .delegate('#panel span.zoomout', 'click', function(event) {
                         
-                        event.preventDefault();
-                        
                         if(settings.current_size > 0) {
                         
                             settings.current_size--;
@@ -372,9 +385,12 @@
                         }
                          
                     })
-                    .delegate('#panel span.submitsearch', 'click', function(event) {
+                    .delegate('#panel span.togglehist', 'click', function(event) {
                         
-                        event.preventDefault();
+                        $("#hist", wall).toggle();
+                        
+                    })
+                    .delegate('#panel span.submitsearch', 'click', function(event) {
                         
                         search_term = $('#panel input[name="search"]', wall).val();
                         if(search_term!='' && search_term != settings.search_box_default) {
@@ -406,7 +422,7 @@
                                 settings.category = {
                                     'id': null,
                                     'name': '',
-                                    'term': '',
+                                    'term': ''
                                 }
                                 settings.search_term = search_term;
                                 apiStart(wall, settings);
@@ -429,6 +445,26 @@
                         $(this).val('');
                         
                     })
+                    .delegate('#histlist a', 'click', function(event) {
+                        
+                        event.preventDefault();
+                        if($(this).data('search_term')) {
+                            settings.category = {
+                                'id': null,
+                                'name': '',
+                                'term': ''
+                            }
+                            settings.search_term = $(this).data('search_term');
+                        } else {
+                            settings.category = {
+                                'id': $(this).data('pk'),
+                                'name': $(this).data('name'),
+                                'term': $(this).data('term')
+                            }
+                        }
+                        apiStart(wall, settings);
+                        
+                    })
                     .delegate('.searchable', 'click', function(event) {
                        
                         search_term = $(this).html();
@@ -438,7 +474,7 @@
                             settings.category = {
                                 'id': null,
                                 'name': '',
-                                'term': '',
+                                'term': ''
                             }
                             settings.search_term = search_term;
                             apiStart(wall, settings);
@@ -450,8 +486,6 @@
                     })
                     .delegate('#panel span.shuffle', 'click', function(event) {
                        
-                        event.preventDefault();
-                        
                         if(allow_shuffle) {
                         
                             keys = [];
@@ -526,7 +560,6 @@
                                 if(settings.show_more_link) {
                                     var info_html = '<div class="ui-widget ui-state-highlight ui-corner-all"><span class="ui-icon ui-icon-extlink" style="float:left;"></span><a href="' + settings.collections_record_url + musobj.object_number + '">More details</a></div>';
                                 } else {
-                                
                                     var info_html = '';
                                 }
                                 if(typeof(musobj.descriptive_line) != 'undefined' && musobj.descriptive_line != '' && musobj.descriptive_line != ['Unknown']) { 
@@ -673,16 +706,30 @@
                             settings.grid_height = settings.grid_width;
                             settings.max_offset = settings.grid_width * settings.grid_height;
                             
-                            // populate title bar
-                            
-                            console.log(1, settings.category_id, 2, settings.search_term);
-                            
+                            // populate title bar and history
+                            in_hist = false;
                             if(settings.category.id != null) {
                                 var title_text = 'Showing ' + settings.num_results + ' images for <span class="">' + ucfirst(settings.category.name) + ': '+ ucfirst(settings.category.term) + '</span>';
+                                var cat_token = settings.category.id + settings.category.name + settings.category.term;
+                                cat_token = cat_token.replace(/ /gi, '').toLowerCase();
+                                if($.inArray(cat_token, settings.browse_hist) == -1) {
+                                    settings.browse_hist.push(cat_token);
+                                    $("#histlist ul").append('<li><a href="#" data-name="' + settings.category.name + '" data-pk="' + settings.category.id + '" data-term="' + settings.category.term + '">' + ucfirst(settings.category.name) + ': ' + settings.category.term + '</a></li>');
+                                }
+                                $("#histlist").show();
                             } else if(settings.search_term != '') {
                                 var title_text = 'Showing ' + settings.num_results + ' images for <span class="">' + settings.search_term + '</span>';
+                                if($.inArray(settings.search_term, settings.browse_hist) == -1) {
+                                    $("#histlist ul").append('<li><a href="#" data-search_term="'+settings.search_term+'" title="Search for \'' + settings.search_term + '\'">Search: '+settings.search_term+'</a></li>');
+                                    settings.browse_hist.push(settings.search_term);
+                                }
+                                $("#histlist").show();
                             } else {
                                 var title_text = settings.title_no_term;
+                            }
+                            if(settings.browse_hist.length > settings.max_history) {
+                                $("#histlist li:first").remove();
+                                settings.browse_hist.shift();
                             }
                             $("#title .title_info", wall).html(title_text);
                             

@@ -6,8 +6,8 @@
 #grid ul li { float: left; border: 1px solid ; background-color: #f1f1f1; cursor: pointer;}
 #grid ul li.blank { background-image: none!important; }
 
-#sidebar, #dialog, #loading, #fullsize, #disabled { display: none; }
-#sidebar, #panel, #dialog, #loading, #fullsize, #title, #disabled { position: absolute; }
+#sidebar, #dialog, #loading, #fullsize, #disabled, #hist { display: none; }
+#sidebar, #panel, #dialog, #loading, #fullsize, #title, #disabled, #hist { position: absolute; }
 
 #panel { bottom: 0; z-index: 20; padding: 4px; width: auto; }
 #panel li { float: left; padding: 4px; margin: 0 4px 0 0; cursor: pointer; }
@@ -19,9 +19,9 @@
 #sidebar div.sidebar_image img { padding-bottom: 8px; border-bottom: 1px dotted #a1a1a1; margin-bottom: 8px; }
 #sidebar div.sidebar_info { overflow-y: auto; }
 #sidebar div.sidebar_info .ui-widget { padding: 8px; }
-#sidebar ul.list { margin-bottom: 0.25em; padding-left: 1.0em; }
-#sidebar ul.list li { padding: 0px; margin-bottom: 0px;  }
-#sidebar ul.list ul li { margin-left: 1.0em; }
+ul.list { margin-bottom: 0.25em; padding-left: 1.0em; }
+ul.list li { padding: 0px; margin-bottom: 0px;  }
+ul.list ul li { margin-left: 1.0em; }
 #sidebar img { cursor: pointer; }
 #sidebar ul li a { text-decoration: none; }
 #sidebar .sidebar-image-zoom { position: relative; bottom: 34px; left: 0; }
@@ -30,8 +30,11 @@
 #fullsize { width: auto!important; z-index: 30; }
 #fullsize img { padding: 8px; }
 
-#title { top: 0; left: 0; padding: 8px; width: auto!important; }
+#title { top: 0; left: 0; padding: 8px; width: auto!important; min-width: 300px; }
 #title p { margin: 0!important; font-weight: 800; }
+
+#hist { top: 50px; left: 0; padding: 8px; }
+#histlist { margin-top: 8px; }
 
 .tagcloud { text-align: center; margin: 0; line-height: 3.0em; }
 .tagcloud li { display: inline; margin: 8px; word-wrap: break-word; }
@@ -45,3 +48,4 @@
 .object-title { line-height: 1.2em; }
 .searchable { text-decoration: none; cursor: pointer;  }
 .searchable:hover, #sidebar ul li a:hover { text-decoration: underline; }
+.hide { display: none; }
