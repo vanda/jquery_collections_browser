@@ -76,7 +76,7 @@
                 'term': ''
             },
             'max_results': 1000, // the max results we can handle
-            'limit': 41, // how many images to get per api request
+            'limit': 50, // how many images to get per api request. Also affects the size of progressbar increments
             'search_term': '', // term to search the api for
             'category-stub': '', // category to retrieve images from 
             'sidebar_image_suffix': '_jpg_w',
@@ -123,7 +123,7 @@
                     fsdiag.css({
                         'top': 0,
                         'left': 0 
-                    })
+                    });
                 }
                 fsdiag.show();
                 
@@ -132,6 +132,64 @@
         };
         
         var settings = $.extend({}, defaults, options); 
+        
+        var cache = [], cache_full = false, fill_loop_id, cache_loop_id, ajax_in_progress = false, offset = 0, offset_anchor = 0, allow_shuffle = false, fullsize_dragged = false, old_parent;
+
+        var fragments = {
+         
+            panel:      '<div id="panel" class="ui-widget ui-widget-content ui-corner-all">' +
+                        '<ul id="icons">' +
+                        '<li><input class="ui-state-default ui-corner-all" type="text" name="search" value="'+settings.search_box_default+'"></li>' +
+                        '<li class="ui-state-default ui-corner-all"><span class="submitsearch ui-icon ui-icon-search" title="Submit search"></span></li>' +
+                        '<li class="ui-state-default ui-corner-all"><span class="fullscreen ui-icon ui-icon-arrow-4-diag" title="Toggle full screen"></span></li>' +
+                        '<li class="ui-state-default ui-corner-all"><span class="shuffle ui-icon ui-icon-shuffle" title="Shuffle images"></span></li>' +
+                        '<li class="ui-state-default ui-corner-all"><span class="zoomin ui-icon ui-icon-zoomin" title="Larger tiles"></span></li>' +
+                        '<li class="ui-state-default ui-corner-all"><span class="zoomout ui-icon ui-icon-zoomout" title="Smaller tiles"></span></li>' +
+                        '<li class="ui-state-default ui-corner-all"><span class="togglehist ui-icon ui-icon-clock" title="Toggle history panel"></span></li>' +
+                        '<li class="ui-state-default ui-corner-all"><span class="toggleclip ui-icon ui-icon-clipboard" title="Toggle clipboard"></span></li>' +
+                        '</ul>'  +
+                        '</div>',
+            
+            sidebar:    '<div id="sidebar"  class="ui-dialog ui-widget ui-widget-content ui-corner-all">' +
+                        '<div class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix"><span class="ui-dialog-title object-title"></span><a href="#" class="ui-dialog-titlebar-close ui-corner-all" role="button"><span class="ui-icon ui-icon-closethick">close</span></a></div>' +
+                        '<div class="sidebar_image"></div>' +
+                        '<div class="sidebar_info"></div>' +
+                        '</div>',
+            
+            dialog:     '<div id="dialog" class="ui-dialog ui-widget ui-widget-content ui-corner-all">' +
+                        '<div class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix"><span class="ui-dialog-title">'+settings.alert_title+'</span><a href="#" class="ui-dialog-titlebar-close ui-corner-all" role="button"><span class="ui-icon ui-icon-closethick">close</span></a></div>' +
+                        '<p><span style="float: left; margin-right: .3em;" class="ui-icon ui-icon-alert"></span><span id="dialog_text"></span></p>' +
+                        '<div class="ui-dialog-buttonpane ui-widget-content ui-helper-clearfix"><div class="ui-dialog-buttonset"><button type="button" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button" aria-disabled="false"><span class="ui-button-text">Ok</span></button></div></div>' +
+                        '</div>',
+            
+            loading:    '<div id="loading" class="ui-dialog ui-widget ui-widget-content ui-corner-all">' +
+                        '<div class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix"><span class="ui-dialog-title">Please wait...</span><a href="#" class="ui-dialog-titlebar-close ui-corner-all" role="button"><span class="ui-icon ui-icon-closethick">close</span></a></div>' +
+                        '<p class="results_info"></p>' +
+                        '<div id="progressbar"></div>' +
+                        '</div>',
+            
+            title:      '<div id="title" class="ui-dialog ui-widget ui-widget-content ui-corner-all">' +
+                        '<p class="title_info"></p>' +
+                        '</div>',
+            
+            fs:         '<div id="fullsize" class="ui-dialog ui-widget ui-widget-content ui-corner-all">' +
+                        '<div class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix"><span class="ui-dialog-title"></span><a href="#" class="ui-dialog-titlebar-close ui-corner-all" role="button"><span class="ui-icon ui-icon-closethick">close</span></a></div>' +
+                        '<img src="" alt="" title="" />' +
+                        '</div>',
+            
+            hist:       '<div id="hist" class="ui-dialog ui-widget ui-widget-content ui-corner-all">' +
+                        '<div class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix"><span class="ui-dialog-title">Your history</span><a href="#" class="ui-dialog-titlebar-close ui-corner-all" role="button"><span class="ui-icon ui-icon-closethick">close</span></a></div>' +
+                        '<div id="histlist" class="ui-widget ui-state-highlight ui-corner-all hide"><ul class="list"></ul></div>' +
+                        '</div>',
+            
+            clipboard:  '<div id="clipboard" class="ui-dialog ui-widget ui-widget-content ui-corner-all">' +
+                        '<div class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix"><span class="ui-dialog-title">Your clipboard</span><a href="#" class="ui-dialog-titlebar-close ui-corner-all" role="button"><span class="ui-icon ui-icon-closethick">close</span></a></div>' +
+                        '<div id="clipboardlist" class="ui-widget ui-state-highlight ui-corner-all hide"><ul class="list"></ul><div class="clearfix"></div></div>' +
+                        '</div>',
+            
+            disabled:   '<div id="disabled" class="ui-widget-overlay"></div>'
+            
+        };
 
         var methods = {
                 
@@ -148,7 +206,7 @@
             },
                     
             showDialog: function(wall, msg) {
-                dia = $('#dialog', wall);
+                var dia = $('#dialog', wall);
                 $('#dialog_text', dia).html(msg);
                 dia.css({
                     'left': wall.width()/2 - dia.width()/2,
@@ -159,7 +217,7 @@
             
             populateSidebar: function(wall, objnum) {
                 
-                url = settings.api_stub + objnum;
+                var url = settings.api_stub + objnum;
                         
                 $('#fullsize').hide();
                 var sidebar = $("#sidebar", wall);
@@ -191,10 +249,10 @@
                     url: url,
                     success: function (json) {
                         
-                        musobj = json[0].fields;
-                        image_url = settings.images_url + musobj.primary_image_id.substr(0, 6) + "/" + musobj.primary_image_id + settings.sidebar_image_suffix + ".jpg";
-                        objname = musobj.object;
-                        objtitle = '<span id="objname" class="searchable" title="Search for \'' + objname +'\'">' + objname + '</span>';
+                        var musobj = json[0].fields;
+                        var image_url = settings.images_url + musobj.primary_image_id.substr(0, 6) + "/" + musobj.primary_image_id + settings.sidebar_image_suffix + ".jpg";
+                        var objname = musobj.object;
+                        var objtitle = '<span id="objname" class="searchable" title="Search for \'' + objname +'\'">' + objname + '</span>';
                         if(musobj.title) {
                             objname += ': ' + musobj.title;
                             objtitle += ': ' + musobj.title;
@@ -203,25 +261,24 @@
                         var sidebar_image    =  '<img src="' + image_url + '" title="' + objname + '" alt="' + objname + '" width="'+ settings.sidebar_image_size +'" height="'+ settings.sidebar_image_size +'" data-objnum="' + musobj.object_number + '">';
                         $('span.object-title', sidebar).html('<span class="ui-icon ui-icon-search" style="float: left; margin-right: 2px;"></span>'+objtitle);
 
+                        var info_html = '';
                         if(settings.show_more_link) {
-                            var info_html = '<div class="ui-widget ui-state-highlight ui-corner-all"><div><span class="ui-icon ui-icon-extlink" style="float:left;"></span><a href="' + settings.collections_record_url + musobj.object_number + '">More details</a></div>';
+                            info_html = '<div class="ui-widget ui-state-highlight ui-corner-all"><div><span class="ui-icon ui-icon-extlink" style="float:left;"></span><a href="' + settings.collections_record_url + musobj.object_number + '">More details</a></div>';
                             if(settings.enable_clipboard) {
                                 info_html += '<div><span class="ui-icon ui-icon-copy" style="float:left;"></span><a data-name="' + objname + '" data-objnum="' + musobj.object_number + '" data-imref="' + musobj.primary_image_id + '" class="save" href="#" title="Save this object to your clipboard">Save</a></div></div>';
                             }
-                        } else {
-                            var info_html = '';
                         }
-                        if(typeof(musobj.descriptive_line) != 'undefined' && musobj.descriptive_line != '' && musobj.descriptive_line != ['Unknown']) { 
+                        if(typeof(musobj.descriptive_line) != 'undefined' && musobj.descriptive_line !== '' && musobj.descriptive_line != ['Unknown']) { 
                             info_html += '<div class="ui-widget ui-state-highlight ui-corner-all">' + musobj.descriptive_line + '</div>';
                         }
                         info_html += '<div class="ui-widget ui-state-highlight ui-corner-all">';
                         info_html +=    '<ul>';
-                        for(k=0; k<settings.tombstone.length; k++) {
-                            t = settings.tombstone[k][0];
-                            c = settings.tombstone[k][1];
-                            if(typeof(musobj[c]) != 'undefined' && musobj[c] != '' && musobj[c] != ['Unknown']) { 
+                        for(var k=0; k<settings.tombstone.length; k++) {
+                            var t = settings.tombstone[k][0];
+                            var c = settings.tombstone[k][1];
+                            if(typeof(musobj[c]) != 'undefined' && musobj[c] !== '' && musobj[c] != ['Unknown']) { 
                                 info_html += '<li><strong>'+t + '</strong>: ' + musobj[c] +'</li>'; 
-                            };
+                            }
                         }
                         info_html        +=  '</ul></div>';
                         info_html        += '<div class="ui-widget ui-state-highlight ui-corner-all" id="browse">';
@@ -231,23 +288,23 @@
 
                         for( k=0; k<settings.taxonomy.length; k++ ) {
                             
-                            category = musobj[settings.taxonomy[k]];
+                            var category = musobj[settings.taxonomy[k]];
                             if(methods.countGroups(category) > 0) {
-                                taxonomy_title = methods.ucfirst(settings.taxonomy[k]);
+                                var taxonomy_title = methods.ucfirst(settings.taxonomy[k]);
                                 lines++;
                                 if(settings.tag_style == 'list') {
                                     info_html += '<li><strong>' + taxonomy_title + '</strong>';
                                     info_html += '<ul>';
                                 }
-                                for( p=0; p < category.length; p++ ) {
+                                for(var p=0; p < category.length; p++ ) {
                                     // TO DO: algoritmo for tag sizing
-                                    s = Math.floor(Math.random()*6);
-                                    cat = category[p];
-                                    category_name = methods.ucfirst(cat.fields['name']);
-                                    if( cat.fields['museumobject_count'] > settings.min_category_count && category_name != 'Unknown') {
+                                    var s = Math.floor(Math.random()*6);
+                                    var cat = category[p];
+                                    var category_name = methods.ucfirst(cat.fields.name);
+                                    if( cat.fields.museumobject_count > settings.min_category_count && category_name != 'Unknown') {
                                         lines++;
-                                        info_html += '<li class="size-'+parseInt(s)+'"><a href="#" data-name="' + cat.model.split('.')[1] + '" data-pk="' + cat.pk + '" data-term="' + category_name + '" title="Browse images for \'' + category_name + '\'">' + category_name + '</a></li>';
-                                    };
+                                        info_html += '<li class="size-'+parseInt(s, 10)+'"><a href="#" data-name="' + cat.model.split('.')[1] + '" data-pk="' + cat.pk + '" data-term="' + category_name + '" title="Browse images for \'' + category_name + '\'">' + category_name + '</a></li>';
+                                    }
                                 }
                                 if(settings.tag_style == 'list') info_html += '</ul>';
                                 info_html += '</li>';
@@ -255,7 +312,7 @@
                             
                         }
                         
-                        if(lines==0) {
+                        if(lines===0) {
                             info_html += '<li>Sorry, no categories for this object.</li>';
                         }
                         
@@ -282,7 +339,6 @@
                 
                 ajax_in_progress = true;
                 $('#panel .shuffle').addClass('disabled');
-                allow_shuffle = false;
                 
                 $.ajax({
                     dataType: 'jsonp',
@@ -295,25 +351,25 @@
                             
                         } else {
                         
-                            if(settings.show_loading) { methods.showLoading(); };
+                            if(settings.show_loading) { methods.showLoading(); }
                         
                             if(typeof(cache_loop_id) != 'undefined') clearInterval(cache_loop_id);
                             if(typeof(fill_loop_id) != 'undefined') clearInterval(fill_loop_id);
-                            if(typeof(cache) != 'undefined') delete cache;
+                            cache = [];
                             offset = 0;
                             $("#grid ul li", wall).addClass('blank');
                         
                             // from the result count set the grid size
                             settings.num_results = (json.meta.result_count > settings.max_results) ? settings.max_results : json.meta.result_count;
-                            settings.display_results = parseInt(settings.num_results);
+                            settings.display_results = parseInt(settings.num_results, 10);
                             settings.grid_width = Math.floor(Math.sqrt(settings.num_results));
                             settings.grid_height = settings.grid_width;
                             settings.max_offset = settings.grid_width * settings.grid_height;
                             
                             // populate title bar and history
-                            in_hist = false;
-                            if(settings.category.id != null) {
-                                var title_text = 'Showing ' + settings.num_results + ' images for <span class="">' + methods.ucfirst(settings.category.name) + ': '+ methods.ucfirst(settings.category.term) + '</span>';
+                            var in_hist = false, title_text;
+                            if(settings.category.id !== null) {
+                                title_text = 'Showing ' + settings.num_results + ' images for <span class="">' + methods.ucfirst(settings.category.name) + ': '+ methods.ucfirst(settings.category.term) + '</span>';
                                 var cat_token = settings.category.id + settings.category.name + settings.category.term;
                                 cat_token = cat_token.replace(/ /gi, '').toLowerCase();
                                 if($.inArray(cat_token, settings.browse_hist) == -1) {
@@ -321,15 +377,15 @@
                                     $("#histlist ul").append('<li><a href="#" data-name="' + settings.category.name + '" data-pk="' + settings.category.id + '" data-term="' + settings.category.term + '">' + methods.ucfirst(settings.category.name) + ': ' + settings.category.term + '</a></li>');
                                 }
                                 $("#histlist").show();
-                            } else if(settings.search_term != '') {
-                                var title_text = 'Showing ' + settings.num_results + ' images for <span class="">' + settings.search_term + '</span>';
+                            } else if(settings.search_term !== '') {
+                                title_text = 'Showing ' + settings.num_results + ' images for <span class="">' + settings.search_term + '</span>';
                                 if($.inArray(settings.search_term, settings.browse_hist) == -1) {
                                     $("#histlist ul").append('<li><a href="#" data-search_term="'+settings.search_term+'" title="Search for \'' + settings.search_term + '\'">Search: '+settings.search_term+'</a></li>');
                                     settings.browse_hist.push(settings.search_term);
                                 }
                                 $("#histlist").show();
                             } else {
-                                var title_text = settings.title_no_term;
+                                title_text = settings.title_no_term;
                             }
                             if(settings.browse_hist.length > settings.max_history) {
                                 $("#histlist li:first").remove();
@@ -344,12 +400,8 @@
                             
                             // add offset attributes
                             offset_anchor = 0;
-                            num_cols = $("#grid>ul:first li", wall).size();
-                            tiles = $('#grid>ul>li', wall);
-                            count = 0;
-                            row = 0;
-                            o = offset_anchor;
-                            for(k=0; k < tiles.size(); k++) {
+                            var num_cols = $("#grid>ul:first li", wall).size(), tiles = $('#grid>ul>li', wall), count = 0, row = 0, o = offset_anchor;
+                            for(var k=0; k < tiles.size(); k++) {
                                 $(tiles[k]).data('offset', o);
                                 count++;
                                 if(count==num_cols) {
@@ -362,10 +414,8 @@
                                 
                             }
                             ajax_in_progress = false;
-                            
-                            cache = new Array();
-                            cache_loop_id = setInterval(function() { methods.fillCache(settings, cache) }, settings.cache_interval);
-                            fill_loop_id = setInterval(function() { methods.fillTiles(settings, cache) }, settings.fill_interval);
+                            cache_loop_id = setInterval(function() { methods.fillCache(settings, cache); }, settings.cache_interval);
+                            fill_loop_id = setInterval(function() { methods.fillTiles(settings, cache); }, settings.fill_interval);
                             
                         }
                         
@@ -376,7 +426,7 @@
                     
             resize: function(wall) {
                 
-                d = settings.sizes[settings.current_size];
+                var d = settings.sizes[settings.current_size];
                 settings.tile_w = d.dim;
                 settings.tile_h = d.dim;
                 settings.cell_w = settings.tile_w + settings.tile_margin + 2; // the '2' accounts for borders
@@ -391,12 +441,8 @@
                 methods.draw(wall);
                 // add offset attributes
                 offset_anchor = 0;
-                num_cols = $("#grid>ul:first li", wall).size();
-                tiles = $('#grid>ul>li', wall);
-                count = 0;
-                row = 0;
-                o = offset_anchor;
-                for(k=0; k < tiles.size(); k++) {
+                var num_cols = $("#grid>ul:first li", wall).size(), tiles = $('#grid>ul>li', wall), count = 0, row = 0, o = offset_anchor;
+                for(var k=0; k < tiles.size(); k++) {
                     
                     $(tiles[k]).data('offset', o);
                     count++;
@@ -422,7 +468,8 @@
                     limit = 1;
                 }
                 
-                if(settings.category.id != null) {
+                var url, display_term;
+                if(settings.category.id !== null) {
                     
                     url = settings.api_stub;
                     url += '?' + settings.category.name + '=' + settings.category.id;
@@ -445,8 +492,8 @@
                     
             drawEmptyRow: function(n) {
                 
-                r = '<ul>';
-                for(j=0; j < n; j++) { r += settings.blank_tile; }
+                var r = '<ul>';
+                for(var j=0; j < n; j++) { r += settings.blank_tile; }
                 r += '</ul>';
                 return r;
             },
@@ -466,8 +513,8 @@
             countGroups: function(category) {
                 
                 var c = 0;
-                for ( n = 0; n < category.length; n++ ) {
-                    if(category[0].fields['name'] != 'Unknown' && category[0].fields['museumobject_count'] > settings.min_category_count) {
+                for (var n = 0; n < category.length; n++ ) {
+                    if(category[0].fields.name != 'Unknown' && category[0].fields.museumobject_count > settings.min_category_count) {
                         c++;
                     }
                 }
@@ -495,14 +542,15 @@
                     'S': Math.ceil((wall.height() - grid.position().top + grid.height()) / settings.cell_h),
                     'E': Math.ceil((grid.position().left + grid.width()) / settings.cell_w),
                     'W': Math.ceil(grid.position().left / settings.cell_w)
-                }
-                for(prop in tiles) { tiles[prop] = tiles[prop] <0 ? 0 : tiles[prop]; }
+                };
+                var p;
+                for(p in tiles) { tiles[p] = tiles[p] < 0 ? 0 : tiles[p]; }
                 
-                do_offsets = false;
+                var do_offsets;
                 
                 // add new rows to top
                 if(tiles.N) {
-                    for(i=0;i<tiles.N;i++) {
+                    for(var i=0;i<tiles.N;i++) {
                         grid.prepend(methods.drawEmptyRow($("#grid ul:first > li", wall).size()));
                     }
                     do_offsets = true;
@@ -510,7 +558,7 @@
                 
                 // add new rows to bottom
                 if(tiles.S) {
-                    for(i=0;i<tiles.S;i++) {
+                    for(var j=0;j<tiles.S;j++) {
                         grid.append(methods.drawEmptyRow($("#grid ul:first > li", wall).size()));
                     }
                     do_offsets = true;
@@ -518,8 +566,8 @@
                 
                 // add new cols to left
                 if(tiles.W) {
-                    tl = '';
-                    for(i=0;i<tiles.W;i++) {
+                    var tl = '';
+                    for(var k=0;k<tiles.W;k++) {
                         tl += settings.blank_tile;
                     }
                     $("#grid ul", wall).prepend(tl);
@@ -528,8 +576,8 @@
                 
                 // add new cols to right
                 if(tiles.E) {
-                    tr = '';
-                    for(i=0;i<tiles.E;i++) {
+                    var tr = '';
+                    for(var l=0;l<tiles.E;l++) {
                         tr += settings.blank_tile;
                     }
                     $("#grid ul", wall).append(tr);
@@ -541,7 +589,7 @@
                     'top': tiles.N > 0 ? grid.position().top - tiles.N * settings.cell_h  : grid.position().top,
                     'left': tiles.W > 0 ? grid.position().left - tiles.W * settings.cell_w : grid.position().left,
                     'width': $("#grid ul:first > li", wall).length * settings.cell_w
-                })
+                });
                 
                 // make sure all the new tiles are styled up
                 methods.styleTiles(wall);
@@ -552,26 +600,25 @@
                     'S': Math.floor( (grid.height() - wall.height() + grid.position().top) / settings.cell_h),
                     'E': Math.floor((grid.width() - wall.width() + grid.position().left) / settings.cell_w),
                     'W': Math.floor(grid.position().left * -1 / settings.cell_w)
-                }
+                };
                 
-                for(p in remove) { remove[p] = remove[p] < 0 ? 0 : remove[p]; };
+                for(p in remove) { remove[p] = remove[p] < 0 ? 0 : remove[p]; }
                 
-                tiles_removed = 0;
+                var tiles_removed = 0, rows_removed = 0;
                 while(tiles_removed < remove.W) {
                     $("#grid ul li:first-child").remove();
                     tiles_removed ++;
-                    grid.css({'left': grid.position().left + settings.cell_w})
+                    grid.css({'left': grid.position().left + settings.cell_w});
                 }
                 tiles_removed = 0;
                 while(tiles_removed < remove.E) {
                     $("#grid ul li:last-child").remove();
                     tiles_removed ++;
                 }
-                rows_removed = 0;
                 while(rows_removed < remove.N) {
                     $("#grid ul:first-child").remove();
                     rows_removed ++;
-                    grid.css({'top': grid.position().top + settings.cell_h})
+                    grid.css({'top': grid.position().top + settings.cell_h});
                 }
                 rows_removed = 0;
                 while(rows_removed < remove.S) {
@@ -588,7 +635,7 @@
                     
             updateOffsets: function(wall, tiles, remove, settings) {
             
-                offset_anchor = parseInt(offset_anchor);
+                offset_anchor = parseInt(offset_anchor, 10);
                 
                 if(tiles.N > 0) {
                     offset_anchor -= settings.grid_width * tiles.N;
@@ -597,11 +644,12 @@
                     }
                 }
                 
+                var min, max;
                 if(tiles.W > 0) {
                     min = Math.floor(offset_anchor/settings.grid_width) * settings.grid_width;
                     max = min + settings.grid_width -1;
                     offset_anchor -= tiles.W;
-                    if(offset_anchor < min) { offset_anchor += settings.grid_width };
+                    if(offset_anchor < min) { offset_anchor += settings.grid_width; }
                 }
                 
                 offset_anchor += remove.W;
@@ -612,12 +660,11 @@
                 
                 offset = offset_anchor - settings.limit;
                 
-                num_cols = $("#grid>ul:first li", wall).size();
-                rows = $('#grid>ul');
+                var num_cols = $("#grid>ul:first li", wall).size(), rows = $('#grid>ul');
                 
-                for(j=0;j<rows.size();j++) {
+                for(var j=0;j<rows.size();j++) {
                  
-                    o = offset_anchor + (j * settings.grid_width);
+                    var o = offset_anchor + (j * settings.grid_width);
                     if(o>=settings.max_offset) {
                         o -= settings.max_offset;
                     }
@@ -627,7 +674,7 @@
                     min = Math.floor(o/settings.grid_width) * settings.grid_width;
                     max = min + settings.grid_width -1;
                  
-                    for(i=0;i<tiles.size();i++) {
+                    for(var i=0;i<tiles.size();i++) {
                         
                         $(tiles[i]).data('offset', o);
                         o++;
@@ -648,6 +695,7 @@
              
             getImageUrl: function(url_base, image_ref) {
                 
+                var u;
                 try {
                     u = url_base + image_ref.substr(0, 6) + "/" + image_ref + settings.tile_sidebar_image_suffix + ".jpg";
                 } catch(err) {
@@ -659,6 +707,7 @@
                     
             retrieveFromCache: function(offset) {
                 
+                var q;
                 for(q in cache) {
                     if(cache[q].offset == offset) return cache[q];
                 }
@@ -667,7 +716,8 @@
                             dataType: 'jsonp',
                             url: methods.buildUrl(offset, 1),
                             success: function (json) {
-                                for(i=0;i<json.records.length;i++) {
+                                var record, obj, objname;
+                                for(var i=0;i<json.records.length;i++) {
                                     record = json.records[i];
                                     obj = {};
                                     obj.offset = offset;
@@ -680,7 +730,7 @@
                                     }
                                     obj.title = objname;
                                     cache.push(obj);
-                                };
+                                }
                             }
                         });
                 }
@@ -700,12 +750,13 @@
                     if(!ajax_in_progress) {
                 
                         ajax_in_progress = true;
-                        url = methods.buildUrl(offset, settings.limit);
+                        var url = methods.buildUrl(offset, settings.limit);
                         $.ajax({
                             dataType: 'jsonp',
                             url: url,
                             success: function (json) {
-                                for(i=0;i<json.records.length;i++) {
+                                var record, cache_obj, objname;
+                                for(var i=0;i<json.records.length;i++) {
                                     record = json.records[i];
                                     cache_obj = {};
                                     cache_obj.offset = offset;
@@ -719,8 +770,8 @@
                                     cache_obj.title = objname;
                                     cache.push(cache_obj);
                                     offset ++;
-                                };
-                                if(offset >= settings.max_offset && cache.length < settings.max_offset) { offset = 0; };
+                                }
+                                if(offset >= settings.max_offset && cache.length < settings.max_offset) { offset = 0; }
                                 ajax_in_progress = false;
                                 $("#progressbar").progressbar({ value: cache.length });
                                 $("#loading .loaded").html(cache.length);
@@ -736,7 +787,7 @@
                     cache_full = true;
                     setTimeout(methods.hideLoading, settings.hide_loader_time);
                     $("#loading .loaded").html(settings.display_results);
-                    r = Math.floor(Math.random()*settings.tips.length);
+                    var r = Math.floor(Math.random()*settings.tips.length);
                     $('#loading span.ui-dialog-title').html('Done.');
                     $('#loading .results_info').html('<span style="float: left; margin-right: .3em;" class="ui-icon ui-icon-info"></span><strong>Tip:</strong> ' + settings.tips[r]);
                 }
@@ -759,7 +810,8 @@
             },
             
             fillTiles: function(settings, cache) {
-               
+                
+                var t, tt;
                 switch(settings.fill_direction) {
                     case 'forwards':
                         t = $("ul li.blank:first");
@@ -782,9 +834,7 @@
                 
             }
                 
-                
-        }
-        
+        };
 
         settings.current_size = settings.start_size;
         settings.tile_w = settings.sizes[settings.current_size].dim;
@@ -799,17 +849,19 @@
      
         // write out an empty grid
         var grid_html = '<div id="grid">';
-        for(i=0; i < settings.start_rows; i++) {
+        for(var i=0; i < settings.start_rows; i++) {
             grid_html += methods.drawEmptyRow(settings.start_cols);
         }
         grid_html += '</div>';
         this.html(grid_html);
         
+        var grid = $('#grid', this);
+        
         // record the starting size and position, so we can go back to it after fullscreen
         settings.start = {
             'top': this.position().top,
             'left': this.position().left
-        }
+        };
         settings.fullscreen = false;
 
         // apply styles to the empty grid
@@ -819,78 +871,21 @@
             'background-color': settings.background_color,
             'border': settings.wall_border
         });
-        $("#grid", this).css({
+        grid.css({
             'width': settings.cell_w * settings.start_cols
         });
         methods.styleTiles();
 
-        // control panel
-        var panel   =     '<div id="panel" class="ui-widget ui-widget-content ui-corner-all">';
-        panel       +=    '<ul id="icons">';
-        panel       +=    '<li><input class="ui-state-default ui-corner-all" type="text" name="search" value="'+settings.search_box_default+'"></li>';
-        panel       +=    '<li class="ui-state-default ui-corner-all"><span class="submitsearch ui-icon ui-icon-search" title="Submit search"></span></li>';
-        panel       +=    '<li class="ui-state-default ui-corner-all"><span class="fullscreen ui-icon ui-icon-arrow-4-diag" title="Toggle full screen"></span></li>';
-        panel       +=    '<li class="ui-state-default ui-corner-all"><span class="shuffle ui-icon ui-icon-shuffle" title="Shuffle images"></span></li>';
-        panel       +=    '<li class="ui-state-default ui-corner-all"><span class="zoomin ui-icon ui-icon-zoomin" title="Larger tiles"></span></li>';
-        panel       +=    '<li class="ui-state-default ui-corner-all"><span class="zoomout ui-icon ui-icon-zoomout" title="Smaller tiles"></span></li>';
-        if(settings.enable_history) { panel += '<li class="ui-state-default ui-corner-all"><span class="togglehist ui-icon ui-icon-clock" title="Toggle history panel"></span></li>' };
-        if(settings.enable_clipboard) { panel += '<li class="ui-state-default ui-corner-all"><span class="toggleclip ui-icon ui-icon-clipboard" title="Toggle clipboard"></span></li>' };
-        panel       +=    '</ul>'
-        panel       +=    '</div>';
-        
-        // sidebar
-        var sidebar =      '<div id="sidebar"  class="ui-dialog ui-widget ui-widget-content ui-corner-all">';
-        sidebar     +=     '<div class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix"><span class="ui-dialog-title object-title"></span><a href="#" class="ui-dialog-titlebar-close ui-corner-all" role="button"><span class="ui-icon ui-icon-closethick">close</span></a></div>';
-        sidebar     +=     '<div class="sidebar_image"></div>';
-        sidebar     +=     '<div class="sidebar_info"></div>';
-        sidebar     +=     '</div>';
-        
-        // dialog box
-        var dialog      =       '<div id="dialog" class="ui-dialog ui-widget ui-widget-content ui-corner-all">';
-        dialog          +=      '<div class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix"><span class="ui-dialog-title">'+settings.alert_title+'</span><a href="#" class="ui-dialog-titlebar-close ui-corner-all" role="button"><span class="ui-icon ui-icon-closethick">close</span></a></div>';
-        dialog          +=      '<p><span style="float: left; margin-right: .3em;" class="ui-icon ui-icon-alert"></span><span id="dialog_text"></span></p>';
-        dialog          +=      '<div class="ui-dialog-buttonpane ui-widget-content ui-helper-clearfix"><div class="ui-dialog-buttonset"><button type="button" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button" aria-disabled="false"><span class="ui-button-text">Ok</span></button></div></div>';
-        dialog          +=      '</div>';
-        
-        // loading dialog
-        var loading     =       '<div id="loading" class="ui-dialog ui-widget ui-widget-content ui-corner-all">';
-        loading          += '<div class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix"><span class="ui-dialog-title">Please wait...</span><a href="#" class="ui-dialog-titlebar-close ui-corner-all" role="button"><span class="ui-icon ui-icon-closethick">close</span></a></div>';
-        loading         +=      '<p class="results_info"></p>';
-        loading         +=      '<div id="progressbar"></div>';
-        loading         +=      '</div>';
-        
-        // title bar
-        var title       =       '<div id="title" class="ui-dialog ui-widget ui-widget-content ui-corner-all">';
-        title           +=      '<p class="title_info"></p>';
-        title           +=      '</div>';
-        
-        // fullsize dialog
-        var fs          =       '<div id="fullsize" class="ui-dialog ui-widget ui-widget-content ui-corner-all">';
-        fs              +=       '<div class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix"><span class="ui-dialog-title"></span><a href="#" class="ui-dialog-titlebar-close ui-corner-all" role="button"><span class="ui-icon ui-icon-closethick">close</span></a></div>';
-        fs              +=      '<img src="" alt="" title="" />';
-        fs              +=      '</div>';
-        
-        // history panel
-        var hist     =       '<div id="hist" class="ui-dialog ui-widget ui-widget-content ui-corner-all">';
-        hist          += '<div class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix"><span class="ui-dialog-title">Your history</span><a href="#" class="ui-dialog-titlebar-close ui-corner-all" role="button"><span class="ui-icon ui-icon-closethick">close</span></a></div>';
-        hist         +=      '<div id="histlist" class="ui-widget ui-state-highlight ui-corner-all hide"><ul class="list"></ul></div>';
-        hist         +=      '</div>';
-        
-        var clipboard     =       '<div id="clipboard" class="ui-dialog ui-widget ui-widget-content ui-corner-all">';
-        clipboard          += '<div class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix"><span class="ui-dialog-title">Your clipboard</span><a href="#" class="ui-dialog-titlebar-close ui-corner-all" role="button"><span class="ui-icon ui-icon-closethick">close</span></a></div>';
-        clipboard         +=      '<div id="clipboardlist" class="ui-widget ui-state-highlight ui-corner-all hide"><ul class="list"></ul><div class="clearfix"></div></div>';
-        clipboard         +=      '</div>';
-        
-        var disabled     =       '<div id="disabled" class="ui-widget-overlay"></div>';
-        
-        $("#grid").after(sidebar).after(panel).after(dialog).after(loading).after(title).after(fs).after(disabled).after(hist).after(clipboard);
-        $('#panel').css({
+        // add html fragments to DOM
+        var frag;
+        for(frag in fragments) {
+            grid.after(fragments[frag]);
+        }
+        $('#panel', this).css({
             'left': this.width()/2 - $('#panel').width()/2,
             'bottom': 0
-        })
-        allow_shuffle = false;
-        fullsize_dragged = false;
-        cache_full = false;
+        });
+        
         settings.browse_hist = [];
         settings.cliplist = [];
         settings.clipboard = [];
@@ -945,7 +940,7 @@
                     wall.prependTo(old_parent)
                         .animate({
                         'width': settings.width,
-                        'height': settings.height,
+                        'height': settings.height
                     }, settings.fullscreen_speed, function() { 
                         
                         if(sidebar.is(':visible')) {
@@ -963,11 +958,8 @@
                         p.css({'left':0}).css({
                             'left': wall.width()/2 - p.width()/2,
                             'bottom': 0
-                        })
-                        var l = $('#loading');
-                        l.css({
-                            'left': wall.width()/2 - l.width()/2,
-                        })
+                        });
+                        $('#loading').css({ 'left': wall.width()/2 - $('#loading').width()/2 });
                         settings.fullscreen = false;
                         methods.draw(wall);
                         
@@ -981,7 +973,7 @@
                     $(window).scrollTop(0);
                     wall.animate({
                         'width': $(document).width(),
-                        'height': $(window).height(),
+                        'height': $(window).height()
                     }, settings.fullscreen_speed, function() { 
                        
                         if(sidebar.is(':visible')) {
@@ -1000,11 +992,11 @@
                         p.css({
                             'left': wall.width()/2 - p.width()/2,
                             'bottom': 0
-                        })
+                        });
                         var l = $('#loading');
                         l.css({
-                            'left': wall.width()/2 - l.width()/2,
-                        })
+                            'left': wall.width()/2 - l.width()/2
+                        });
                         settings.fullscreen = true;
                         methods.draw(wall);
                     });
@@ -1016,7 +1008,7 @@
                 
                 event.preventDefault();
                 
-                max_size = settings.sizes.length-1;
+                var max_size = settings.sizes.length-1;
                 if(settings.current_size < max_size) {
                     settings.current_size++;
                     methods.resize(wall);
@@ -1051,15 +1043,15 @@
             })
             .delegate('#panel span.submitsearch', 'click', function(event) {
                 
-                search_term = $('#panel input[name="search"]', wall).val();
-                if(search_term!='' && search_term != settings.search_box_default) {
+                var s = $('#panel input[name="search"]', wall).val();
+                if(s!=='' && s != settings.search_box_default) {
                     
                     settings.category = {
                         'id': null,
                         'name': '',
-                        'term': '',
-                    }
-                    settings.search_term = search_term;
+                        'term': ''
+                    };
+                    settings.search_term = s;
                     methods.apiStart(settings);
                     
                     
@@ -1074,16 +1066,16 @@
                 
                 var code = (event.keyCode ? event.keyCode : event.which);
                 if(code == 13) { // User has pressed the enter key
-                    search_term = $(this).val();
+                    var s = $(this).val();
                     
-                    if(search_term!='' && search_term != settings.search_box_default) {
+                    if(s!=='' && s != settings.search_box_default) {
                         
                         settings.category = {
                             'id': null,
                             'name': '',
                             'term': ''
-                        }
-                        settings.search_term = search_term;
+                        };
+                        settings.search_term = s;
                         methods.apiStart(settings);
 
                     } else {
@@ -1112,30 +1104,30 @@
                         'id': null,
                         'name': '',
                         'term': ''
-                    }
+                    };
                     settings.search_term = $(this).data('search_term');
                 } else {
                     settings.category = {
                         'id': $(this).data('pk'),
                         'name': $(this).data('name'),
                         'term': $(this).data('term')
-                    }
+                    };
                 }
                 methods.apiStart(settings);
                 
             })
             .delegate('.searchable', 'click', function(event) {
                
-                search_term = $(this).html();
-                $('#panel input[name="search"]', wall).val(search_term);
-                if(search_term!='' && search_term != settings.search_box_default) {
+                var s = $(this).html();
+                $('#panel input[name="search"]', wall).val(s);
+                if(s!=='' && s != settings.search_box_default) {
                     
                     settings.category = {
                         'id': null,
                         'name': '',
                         'term': ''
-                    }
-                    settings.search_term = search_term;
+                    };
+                    settings.search_term = s;
                     methods.apiStart(settings);
 
                 } else {
@@ -1147,14 +1139,11 @@
                
                 if(allow_shuffle) {
                 
-                    keys = [];
-                    shuffle = [];
-                    for(d=0; d<settings.max_offset; d++) { shuffle[Math.random() * 1] = d; }
-                    for(r in shuffle) { keys.push(r); };
+                    var keys = [], shuffle = [], tiles = $('#grid li', wall), count = 0;
+                    for(var d=0; d<settings.max_offset; d++) { shuffle[Math.random() * 1] = d; }
+                    for(var r in shuffle) { keys.push(r); }
                     keys.sort();
-                    tiles = $('#grid li', wall);
-                    count = 0;
-                    for(k in keys) {
+                    for(var k in keys) {
                         methods.fillTile($(tiles[count]), methods.retrieveFromCache(shuffle[keys[k]], cache));
                         count ++;
                     }
@@ -1175,15 +1164,12 @@
                 
                 event.preventDefault();
                 
-                objnum = $(this).data('objnum');
-                imref = $(this).data('imref');
-                
-                clipobj = {
+                var objnum = $(this).data('objnum'), imref = $(this).data('imref');
+                var clipobj = {
                     objnum: objnum,
                     name: $(this).data('name'),
                     img: settings.images_url + imref.substr(0, 6) + "/" + imref + "_jpg_s.jpg"
-                }
-                
+                };
                 if($.inArray($(this).data('objnum'), settings.cliplist) == -1) { 
 
                     settings.cliplist.push(objnum);
@@ -1212,22 +1198,14 @@
                 settings.category = {
                     'id': $(this).data('pk'),
                     'name': $(this).data('name'),
-                    'term': $(this).data('term'),
-                }
+                    'term': $(this).data('term')
+                };
                 methods.apiStart(settings);
                 $('#panel input[name="search"]', wall).val('New search');
         
             })
             .delegate('#sidebar img', 'click', settings.event_click_sidebar_img);
-            
 
-        
-        //~ return this.each(function() {
-        //~ 
-            //~ 
-            //~ 
-        //~ })
-
-    }
+    };
 
 })( jQuery );
