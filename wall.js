@@ -1196,12 +1196,13 @@
             
             function fillTile(tile, item) {
                 
-                tile
-                    .css({ 'background-image': 'url('+getImageUrl(settings.images_url, item.imref)+')'})
-                    .attr('title', item.title + ' [' + item.num + ']')
-                    .data('objnum', item.num)
-                    .removeClass('blank');
-                
+                if(tile && typeof(tile) != 'undefined') {
+                    tile
+                        .css({ 'background-image': 'url('+getImageUrl(settings.images_url, item.imref)+')'})
+                        .attr('title', item.title + ' [' + item.num + ']')
+                        .data('objnum', item.num)
+                        .removeClass('blank');
+                }
             }
             
             function fillTiles(settings, cache) {
