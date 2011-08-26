@@ -10,578 +10,134 @@
     
   $.fn.wall = function(options) { 
         
-        return this.each(function() {
+        var wall = this;
         
-            var defaults = {
+        var defaults = {
                 
-                // dimensions and styles
-                'width': 1024, // width of the wall
-                'height': 768, // height of the wall
-                'sizes': [
-                    { 'dim': 130, 'suff': '_jpg_o', 'name': 'Small images' },
-                    { 'dim': 177, 'suff': '_jpg_ws', 'name': 'Medium images' },
-                    { 'dim': 265, 'suff': '_jpg_w', 'name': 'Large images' },
-                    { 'dim': 355, 'suff': '_jpg_ds', 'name': 'X-Large images' }
-                ],
-                'start_size': 2,
-                'tile_margin': 8, // margin around each tile
-                'sidebar_image_size': 265, // size of the image in the sidebar panel
-                'background_color': '#ffffff', // background colour of the whole wall
-                'tile_border_color': '#a1a1a1', // colour of tile borders
-                'img_fadein': 500, // how long each image should take to fade in (ms)
-                'fullscreen_speed': 250, // how long the wall should take to resize (ms)
-                'min_category_count': 30, // minimum number of objects a category must have to be displayed in the sidebar panel (because, say 10 objects don't make a good wall)
-                'padding': 8, // amount of padding to add to elements that require padding
-                'wall_border': '1px solid #a1a1a1',
-                'panel_width': 'auto',
-                'hide_loader_time': 2000, // how long to display the loading dialog after the images are all loaded
-                'fill_direction': 'random', // what order to fill blank tile - values are 'forwards', 'backwards' or 'random'
-                'tag_style': 'list', // how to display the tags - values are 'tagcloud', or 'list'
-                'show_loading': false, // whether to display the loading dialog
-                'show_more_link': false, // whether to display the link to the item details page in the sidebar
-                'enable_history': false, 
-                'enable_clipboard': false,
-                'max_history': 20, // maximum items in history
-                                
-                // messaging
-                'search_box_default': 'New search', // initial text in the search box
-                'alert_title': 'Oops',
-                'alert_msg_no_images': 'Sorry, there are not enough images for that search to fill the screen.',
-                'alert_msg_enter_search': 'Please enter a search term and try again.',
-                'alert_msg_zoom_max': 'Sorry, cannot zoom in any further.',
-                'alert_msg_zoom_min': 'Sorry, cannot zoom out any further.',
-                'title_no_term': 'Showing 1000 selected images.', // what to display in the title bar if there is no search term
-                'tips': [
-                    'Try dragging the image grid to reveal more images.',
-                    'You can change the size of the tiles using the zoom buttons in the panel below.',
-                    'You can shuffle the images using the button in the panel below.',
-                    'Try switching to full screen and back using the toggle fullscreen button.',
-                    'Click on an image to reveal the sidebar with more information about the object.',
-                    'You can load images from a category by clicking the category names in the sidebar.',
-                    'You can drag this window.',
-                    'You can search for similar objects by clicking the object name in the sidebar.',
-                    'The search returns a maximum of 1000 objects.',
-                    'You can see the list of searches you\'ve done by clicking the toggle history button in the panel.'
-                ],
-                
-                // api stuff
-                'api_stub': 'http://www.vam.ac.uk/api/json/museumobject/',
-                'api_search_path': 'search',
-                'images_url': 'http://media.vam.ac.uk/media/thira/collection_images/',
-                'collections_record_url': 'http://collections.vam.ac.uk/item/',
-                'search_term': '', // the search to display. 
-                'category': { // the category to display
-                    'id': null,
-                    'name': '',
-                    'term': ''
-                },
-                'max_results': 1000, // the max results we can handle
-                'limit': 41, // how many images to get per api request
-                'search_term': '', // term to search the api for
-                'category-stub': '', // category to retrieve images from 
-                'sidebar_image_suffix': '_jpg_w',
-                'large_image_suffix': '_jpg_l',
-                
-                // html fragments
-                'blank_tile': '<li class="blank"></li>',
-                
-                // nuts and bolts
-                'cache_interval': 50, // how often to cache some images (ms)
-                'fill_interval': 5, // how often to fill tiles from cache (ms)
-                
-                // list of taxonomy terms to populate the sidebar
-                'taxonomy': [
-                    'styles',
-                    'collections',
-                    'subjects',
-                    'names',
-                    'exhibitions',
-                    'galleries',
-                    'techniques',
-                    'materials',
-                    'categories',
-                    'places'
-                ],
-                
-                // fields to display in sidebar
-                'tombstone': [
-                    ['Artist', 'artist' ],
-                    ['Date', 'date_text' ],
-                    ['Museum no.', 'museum_number' ],
-                    ['Materials &amp; techniques', 'materials_techniques'],
-                    ['Location', 'location'],
-                    ['Place', 'place'],
-                    ['History note', 'history_note']
-                ],
-                
-                'event_click_sidebar_img': function(event) { 
-                    
-                    event.preventDefault();
-                        
-                    fs = $('#fullsize', "#wall");
-                    if(!fullsize_dragged) {
-                        fs.css({
-                            'top': 0,
-                            'left': 0 
-                        })
-                    }
-                    fs.show();
-                    
-                }
-                
-            };
-
+            // dimensions and styles
+            'width': 1024, // width of the wall
+            'height': 768, // height of the wall
+            'sizes': [
+                { 'dim': 130, 'suff': '_jpg_o', 'name': 'Small images' },
+                { 'dim': 177, 'suff': '_jpg_ws', 'name': 'Medium images' },
+                { 'dim': 265, 'suff': '_jpg_w', 'name': 'Large images' },
+                { 'dim': 355, 'suff': '_jpg_ds', 'name': 'X-Large images' }
+            ],
+            'start_size': 2,
+            'tile_margin': 8, // margin around each tile
+            'sidebar_image_size': 265, // size of the image in the sidebar panel
+            'background_color': '#ffffff', // background colour of the whole wall
+            'tile_border_color': '#a1a1a1', // colour of tile borders
+            'img_fadein': 500, // how long each image should take to fade in (ms)
+            'fullscreen_speed': 250, // how long the wall should take to resize (ms)
+            'min_category_count': 30, // minimum number of objects a category must have to be displayed in the sidebar panel (because, say 10 objects don't make a good wall)
+            'padding': 8, // amount of padding to add to elements that require padding
+            'wall_border': '1px solid #a1a1a1',
+            'panel_width': 'auto',
+            'hide_loader_time': 2000, // how long to display the loading dialog after the images are all loaded
+            'fill_direction': 'random', // what order to fill blank tile - values are 'forwards', 'backwards' or 'random'
+            'tag_style': 'list', // how to display the tags - values are 'tagcloud', or 'list'
+            'show_loading': false, // whether to display the loading dialog
+            'show_more_link': false, // whether to display the link to the item details page in the sidebar
+            'enable_history': false, 
+            'enable_clipboard': false,
+            'max_history': 20, // maximum items in history
+                            
+            // messaging
+            'search_box_default': 'New search', // initial text in the search box
+            'alert_title': 'Oops',
+            'alert_msg_no_images': 'Sorry, there are not enough images for that search to fill the screen.',
+            'alert_msg_enter_search': 'Please enter a search term and try again.',
+            'alert_msg_zoom_max': 'Sorry, cannot zoom in any further.',
+            'alert_msg_zoom_min': 'Sorry, cannot zoom out any further.',
+            'title_no_term': 'Showing 1000 selected images.', // what to display in the title bar if there is no search term
+            'tips': [
+                'Try dragging the image grid to reveal more images.',
+                'You can change the size of the tiles using the zoom buttons in the panel below.',
+                'You can shuffle the images using the button in the panel below.',
+                'Try switching to full screen and back using the toggle fullscreen button.',
+                'Click on an image to reveal the sidebar with more information about the object.',
+                'You can load images from a category by clicking the category names in the sidebar.',
+                'You can drag this window.',
+                'You can search for similar objects by clicking the object name in the sidebar.',
+                'The search returns a maximum of 1000 objects.',
+                'You can see the list of searches you\'ve done by clicking the toggle history button in the panel.'
+            ],
             
-
-            var settings = $.extend({}, defaults, options); 
-
-            init($(this), settings);
-
-            function init(wall, settings) {
-             
-                // sort out some dimensions
-                settings.current_size = settings.start_size;
-                settings.tile_w = settings.sizes[settings.current_size].dim;
-                settings.tile_h = settings.sizes[settings.current_size].dim;
-                settings.tile_sidebar_image_suffix = settings.sizes[settings.current_size].suff;
-                settings.cell_w = settings.tile_w + settings.tile_margin + 2; // the '2' accounts for borders
-                settings.cell_h = settings.tile_h + settings.tile_margin + 2; 
-                settings.start_rows = Math.ceil(settings.height / settings.cell_h);
-                settings.start_cols = Math.ceil(settings.width / settings.cell_w);
-             
-                settings.sidebar_width = settings.sidebar_image_size;
-             
-                // write out an empty grid
-                var grid_html = '<div id="grid">';
-                    for(i=0; i < settings.start_rows; i++) {
-                        grid_html += drawEmptyRow(settings.start_cols);
-                    }
-                grid_html += '</div>';
-                wall.html(grid_html);
+            // api stuff
+            'api_stub': 'http://www.vam.ac.uk/api/json/museumobject/',
+            'api_search_path': 'search',
+            'images_url': 'http://media.vam.ac.uk/media/thira/collection_images/',
+            'collections_record_url': 'http://collections.vam.ac.uk/item/',
+            'search_term': '', // the search to display. 
+            'category': { // the category to display
+                'id': null,
+                'name': '',
+                'term': ''
+            },
+            'max_results': 1000, // the max results we can handle
+            'limit': 41, // how many images to get per api request
+            'search_term': '', // term to search the api for
+            'category-stub': '', // category to retrieve images from 
+            'sidebar_image_suffix': '_jpg_w',
+            'large_image_suffix': '_jpg_l',
+            
+            // html fragments
+            'blank_tile': '<li class="blank"></li>',
+            
+            // nuts and bolts
+            'cache_interval': 50, // how often to cache some images (ms)
+            'fill_interval': 5, // how often to fill tiles from cache (ms)
+            
+            // list of taxonomy terms to populate the sidebar
+            'taxonomy': [
+                'styles',
+                'collections',
+                'subjects',
+                'names',
+                'exhibitions',
+                'galleries',
+                'techniques',
+                'materials',
+                'categories',
+                'places'
+            ],
+            
+            // fields to display in sidebar
+            'tombstone': [
+                ['Artist', 'artist' ],
+                ['Date', 'date_text' ],
+                ['Museum no.', 'museum_number' ],
+                ['Materials &amp; techniques', 'materials_techniques'],
+                ['Location', 'location'],
+                ['Place', 'place'],
+                ['History note', 'history_note']
+            ],
+            
+            'event_click_sidebar_img': function(event) { 
                 
-                // record the starting size and position, so we can go back to it after fullscreen
-                settings.start = {
-                    'top': wall.position().top,
-                    'left': wall.position().left
+                event.preventDefault();
+                    
+                var fsdiag = $('#fullsize', wall);
+                if(!fullsize_dragged) {
+                    fsdiag.css({
+                        'top': 0,
+                        'left': 0 
+                    })
                 }
-                settings.fullscreen = false;
-
-                // apply styles to the empty grid
-                wall.css({
-                    'width': settings.width,
-                    'height': settings.height,
-                    'background-color': settings.background_color,
-                    'border': settings.wall_border
-                });
-                $("#grid", wall).css({
-                    'width': settings.cell_w * settings.start_cols
-                });
-                styleTiles(wall);
-
-                // control panel
-                var panel   =     '<div id="panel" class="ui-widget ui-widget-content ui-corner-all">';
-                panel       +=    '<ul id="icons">';
-                panel       +=    '<li><input class="ui-state-default ui-corner-all" type="text" name="search" value="'+settings.search_box_default+'"></li>';
-                panel       +=    '<li class="ui-state-default ui-corner-all"><span class="submitsearch ui-icon ui-icon-search" title="Submit search"></span></li>';
-                panel       +=    '<li class="ui-state-default ui-corner-all"><span class="fullscreen ui-icon ui-icon-arrow-4-diag" title="Toggle full screen"></span></li>';
-                panel       +=    '<li class="ui-state-default ui-corner-all"><span class="shuffle ui-icon ui-icon-shuffle" title="Shuffle images"></span></li>';
-                panel       +=    '<li class="ui-state-default ui-corner-all"><span class="zoomin ui-icon ui-icon-zoomin" title="Larger tiles"></span></li>';
-                panel       +=    '<li class="ui-state-default ui-corner-all"><span class="zoomout ui-icon ui-icon-zoomout" title="Smaller tiles"></span></li>';
-                if(settings.enable_history) { panel += '<li class="ui-state-default ui-corner-all"><span class="togglehist ui-icon ui-icon-clock" title="Toggle history panel"></span></li>' };
-                if(settings.enable_clipboard) { panel += '<li class="ui-state-default ui-corner-all"><span class="toggleclip ui-icon ui-icon-clipboard" title="Toggle clipboard"></span></li>' };
-                panel       +=    '</ul>'
-                panel       +=    '</div>';
-                
-                // sidebar
-                var sidebar_html =      '<div id="sidebar"  class="ui-dialog ui-widget ui-widget-content ui-corner-all">';
-                sidebar_html     +=     '<div class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix"><span class="ui-dialog-title object-title"></span><a href="#" class="ui-dialog-titlebar-close ui-corner-all" role="button"><span class="ui-icon ui-icon-closethick">close</span></a></div>';
-                sidebar_html     +=     '<div class="sidebar_image"></div>';
-                sidebar_html     +=     '<div class="sidebar_info"></div>';
-                sidebar_html     +=     '</div>';
-                
-                // dialog box
-                var dialog      =       '<div id="dialog" class="ui-dialog ui-widget ui-widget-content ui-corner-all">';
-                dialog          +=      '<div class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix"><span class="ui-dialog-title">'+settings.alert_title+'</span><a href="#" class="ui-dialog-titlebar-close ui-corner-all" role="button"><span class="ui-icon ui-icon-closethick">close</span></a></div>';
-                dialog          +=      '<p><span style="float: left; margin-right: .3em;" class="ui-icon ui-icon-alert"></span><span id="dialog_text"></span></p>';
-                dialog          +=      '<div class="ui-dialog-buttonpane ui-widget-content ui-helper-clearfix"><div class="ui-dialog-buttonset"><button type="button" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button" aria-disabled="false"><span class="ui-button-text">Ok</span></button></div></div>';
-                dialog          +=      '</div>';
-                
-                // loading dialog
-                var loading     =       '<div id="loading" class="ui-dialog ui-widget ui-widget-content ui-corner-all">';
-                loading          += '<div class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix"><span class="ui-dialog-title">Please wait...</span><a href="#" class="ui-dialog-titlebar-close ui-corner-all" role="button"><span class="ui-icon ui-icon-closethick">close</span></a></div>';
-                loading         +=      '<p class="results_info"></p>';
-                loading         +=      '<div id="progressbar"></div>';
-                loading         +=      '</div>';
-                
-                // title bar
-                var title       =       '<div id="title" class="ui-dialog ui-widget ui-widget-content ui-corner-all">';
-                title           +=      '<p class="title_info"></p>';
-                title           +=      '</div>';
-                
-                // fullsize dialog
-                var fs          =       '<div id="fullsize" class="ui-dialog ui-widget ui-widget-content ui-corner-all">';
-                fs              +=       '<div class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix"><span class="ui-dialog-title"></span><a href="#" class="ui-dialog-titlebar-close ui-corner-all" role="button"><span class="ui-icon ui-icon-closethick">close</span></a></div>';
-                fs              +=      '<img src="" alt="" title="" />';
-                fs              +=      '</div>';
-                
-                // history panel
-                var hist     =       '<div id="hist" class="ui-dialog ui-widget ui-widget-content ui-corner-all">';
-                hist          += '<div class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix"><span class="ui-dialog-title">Your history</span><a href="#" class="ui-dialog-titlebar-close ui-corner-all" role="button"><span class="ui-icon ui-icon-closethick">close</span></a></div>';
-                hist         +=      '<div id="histlist" class="ui-widget ui-state-highlight ui-corner-all hide"><ul class="list"></ul></div>';
-                hist         +=      '</div>';
-                
-                var clipboard     =       '<div id="clipboard" class="ui-dialog ui-widget ui-widget-content ui-corner-all">';
-                clipboard          += '<div class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix"><span class="ui-dialog-title">Your clipboard</span><a href="#" class="ui-dialog-titlebar-close ui-corner-all" role="button"><span class="ui-icon ui-icon-closethick">close</span></a></div>';
-                clipboard         +=      '<div id="clipboardlist" class="ui-widget ui-state-highlight ui-corner-all hide"><ul class="list"></ul><div class="clearfix"></div></div>';
-                clipboard         +=      '</div>';
-                
-                var disabled     =       '<div id="disabled" class="ui-widget-overlay"></div>';
-                
-                $("#grid").after(sidebar_html).after(panel).after(dialog).after(loading).after(title).after(fs).after(disabled).after(hist).after(clipboard);
-                var p = $('#panel');
-                p.css({
-                    'left': wall.width()/2 - p.width()/2,
-                    'bottom': 0
-                })
-                allow_shuffle = false;
-                fullsize_dragged = false;
-                cache_full = false;
-                settings.browse_hist = [];
-                settings.cliplist = [];
-                settings.clipboard = [];
-                
-                apiStart(wall, settings);
-                
-                // initialize the draggable grid
-                $('#grid', wall).draggable({
-                
-                    cursor: 'pointer',
-                    delay: 150,
-                    stop: function() { 
-                        draw($(this.parentNode)); // <== 'this' is the draggable, which is $('#grid'), so its parentNode is the wall div
-                    }
-                    
-                });
-                
-                $('#loading', wall).draggable({
-                    containment: 'parent'
-                });
-
-                $('#fullsize', wall).draggable({
-                    containment: 'parent',
-                    stop: function() {
-                        fullsize_dragged = true;
-                    }
-                });
-
-                $('#hist', wall).draggable({
-                    containment: 'parent'
-                });
-
-                $('#clipboard', wall).draggable({
-                    containment: 'parent'
-                });
-
-                wall
-                    .delegate('#icons li span', 'mouseover', function(event) {
-                        $(this).parent().addClass('ui-state-hover');
-                    })
-                    .delegate('#icons li span', 'mouseout', function(event) {
-                        $(this).parent().removeClass('ui-state-hover');
-                    })
-                    .delegate('#panel span.fullscreen', 'click', function(event) {
-                        event.preventDefault();
-                        
-                        var sidebar = $("#sidebar", wall);
-                        
-                        if (settings.fullscreen) {
-                            // shrink
-                            $("body").css({'overflow': 'auto'});
-                            wall.prependTo(old_parent)
-                                .animate({
-                                'width': settings.width,
-                                'height': settings.height,
-                            }, settings.fullscreen_speed, function() { 
-                                
-                                if(sidebar.is(':visible')) {
-                                    sidebar.animate({
-                                        'width': settings.sidebar_width,
-                                        'height': wall.height() - 2*settings.padding,
-                                        'top': 0,
-                                        'left': wall.width() - (settings.sidebar_width + 2*settings.padding),
-                                        'padding': settings.padding
-                                    }, settings.fullscreen_speed, function() {});
-                                }
-                                
-                                var p = $('#panel', wall);
-                                $("#sidebar").hide();
-                                p.css({'left':0}).css({
-                                    'left': wall.width()/2 - p.width()/2,
-                                    'bottom': 0
-                                })
-                                var l = $('#loading');
-                                l.css({
-                                    'left': wall.width()/2 - l.width()/2,
-                                })
-                                settings.fullscreen = false;
-                                draw(wall);
-                                
-                            });
-                            
-                        } else {
-                            // expand
-                            old_parent = wall.parent();
-                            wall.prependTo($("body"));
-                            $("body").css({'overflow': 'hidden'});
-                            $(window).scrollTop(0);
-                            wall.animate({
-                                'width': $(document).width(),
-                                'height': $(window).height(),
-                            }, settings.fullscreen_speed, function() { 
-                               
-                                if(sidebar.is(':visible')) {
-                                    sidebar.animate({
-                                        'width': settings.sidebar_width,
-                                        'height': wall.height() - 2*settings.padding,
-                                        'top': 0,
-                                        'left': wall.width() - (settings.sidebar_width + 2*settings.padding),
-                                        'padding': settings.padding
-                                    }, settings.fullscreen_speed, function(){
-                                        $(".sidebar_info", sidebar).height(sidebar.height() - $(".sidebar_image").height());
-                                    });
-                                }
-                                
-                                var p = $('#panel');
-                                p.css({
-                                    'left': wall.width()/2 - p.width()/2,
-                                    'bottom': 0
-                                })
-                                var l = $('#loading');
-                                l.css({
-                                    'left': wall.width()/2 - l.width()/2,
-                                })
-                                settings.fullscreen = true;
-                                draw(wall);
-                            });
-                            
-                        }
-                        
-                    })
-                    .delegate('#panel span.zoomin', 'click', function(event) {
-                        
-                        event.preventDefault();
-                        
-                        max_size = settings.sizes.length-1;
-                        if(settings.current_size < max_size) {
-                            settings.current_size++;
-                            resize(wall);
-                            
-                        } else {
-                            showDialog(wall, settings.alert_msg_zoom_max);
-                        }
-                         
-                    })
-                    .delegate('#panel span.zoomout', 'click', function(event) {
-                        
-                        if(settings.current_size > 0) {
-                        
-                            settings.current_size--;
-                            resize(wall);
-                           
-                            
-                        } else {
-                            showDialog(wall, settings.alert_msg_zoom_min);
-                        }
-                         
-                    })
-                    .delegate('#panel span.togglehist', 'click', function(event) {
-                        
-                        $("#hist", wall).toggle('fast');
-                        
-                    })
-                    .delegate('#panel span.toggleclip', 'click', function(event) {
-                        
-                        $("#clipboard", wall).toggle('fast');
-                        
-                    })
-                    .delegate('#panel span.submitsearch', 'click', function(event) {
-                        
-                        search_term = $('#panel input[name="search"]', wall).val();
-                        if(search_term!='' && search_term != settings.search_box_default) {
-                            
-                            settings.category = {
-                                'id': null,
-                                'name': '',
-                                'term': '',
-                            }
-                            settings.search_term = search_term;
-                            apiStart(wall, settings);
-                            
-                            
-                        } else {
-                            showDialog(wall, settings.alert_msg_enter_search);
-                        }
-                        
-                    })
-                    .delegate('#panel input[name="search"]', 'keyup', function(event) {
-                       
-                        event.preventDefault();
-                        
-                        var code = (event.keyCode ? event.keyCode : event.which);
-                        if(code == 13) { // User has pressed the enter key
-                            search_term = $(this).val();
-                            
-                            if(search_term!='' && search_term != settings.search_box_default) {
-                                
-                                settings.category = {
-                                    'id': null,
-                                    'name': '',
-                                    'term': ''
-                                }
-                                settings.search_term = search_term;
-                                apiStart(wall, settings);
-
-                            } else {
-                                showDialog(wall, settings.alert_msg_enter_search);
-                            }
-                        }
-
-                    })
-                    .delegate('#panel input[name="search"]', 'focus', function(event) {
-                        
-                        event.preventDefault();
-                        $(this).val('');
-                        
-                    })
-                    .delegate('#panel input[name="search"]', 'click', function(event) {
-                        
-                        event.preventDefault();
-                        $(this).val('');
-                        
-                    })
-                    .delegate('#histlist a', 'click', function(event) {
-                        
-                        event.preventDefault();
-                        if($(this).data('search_term')) {
-                            settings.category = {
-                                'id': null,
-                                'name': '',
-                                'term': ''
-                            }
-                            settings.search_term = $(this).data('search_term');
-                        } else {
-                            settings.category = {
-                                'id': $(this).data('pk'),
-                                'name': $(this).data('name'),
-                                'term': $(this).data('term')
-                            }
-                        }
-                        apiStart(wall, settings);
-                        
-                    })
-                    .delegate('.searchable', 'click', function(event) {
-                       
-                        search_term = $(this).html();
-                        $('#panel input[name="search"]', wall).val(search_term);
-                        if(search_term!='' && search_term != settings.search_box_default) {
-                            
-                            settings.category = {
-                                'id': null,
-                                'name': '',
-                                'term': ''
-                            }
-                            settings.search_term = search_term;
-                            apiStart(wall, settings);
-
-                        } else {
-                            showDialog(wall, settings.alert_msg_enter_search);
-                        }
-                        
-                    })
-                    .delegate('#panel span.shuffle', 'click', function(event) {
-                       
-                        if(allow_shuffle) {
-                        
-                            keys = [];
-                            shuffle = [];
-                            for(d=0; d<settings.max_offset; d++) { shuffle[Math.random() * 1] = d; }
-                            for(r in shuffle) { keys.push(r); };
-                            keys.sort();
-                            tiles = $('#grid li', wall);
-                            count = 0;
-                            for(k in keys) {
-                                fillTile($(tiles[count]), retrieveFromCache(shuffle[keys[k]], cache));
-                                count ++;
-                            }
-                            
-                        }
-                        
-                    })
-                    .delegate('.ui-dialog-titlebar-close', 'click', function(event) {
-                        event.preventDefault();
-                        $(this).parent().parent().hide();
-                    })
-                    .delegate('button', 'click', function(event) {
-                        event.preventDefault();
-                        $('#dialog', wall).hide();
-                    })
-                    .delegate('#grid ul li', 'click', function(event) { populateSidebar(wall, $(this).data('objnum')); })
-                    .delegate('#sidebar a.save', 'click', function(event) {
-                        
-                        event.preventDefault();
-                        
-                        objnum = $(this).data('objnum');
-                        imref = $(this).data('imref');
-                        
-                        clipobj = {
-                            objnum: objnum,
-                            name: $(this).data('name'),
-                            img: settings.images_url + imref.substr(0, 6) + "/" + imref + "_jpg_s.jpg"
-                        }
-                        
-                        if($.inArray($(this).data('objnum'), settings.cliplist) == -1) { 
-
-                            settings.cliplist.push(objnum);
-                            settings.clipboard.push(clipobj);
-                            var clipitem = '<li data-objnum="' + objnum + '">';
-                            clipitem += '<img src="' + clipobj.img + '" alt="' + clipobj.name + '" title="' + clipobj.name + '" />';
-                            clipitem += '</li>';
-                            $("#clipboardlist ul").append(clipitem); 
-                            $("#clipboardlist").show(); 
-                            
-                        }
-                        
-                    })
-                    .delegate('#clipboard li', 'click', function(event) { populateSidebar(wall, $(this).data('objnum')); })
-                    .delegate('#sidebar a.close', 'click', function(event) { 
-                     
-                        event.preventDefault();
-                        
-                        $('#sidebar', wall).hide();
-                        
-                    })
-                    .delegate('#browse a', 'click', function(event) { 
-                       
-                        event.preventDefault();
-                        
-                        settings.category = {
-                            'id': $(this).data('pk'),
-                            'name': $(this).data('name'),
-                            'term': $(this).data('term'),
-                        }
-                        apiStart(wall, settings);
-                        
-                        $('#panel input[name="search"]', wall).val('New search');
-                
-                    })
-                    .delegate('#sidebar img', 'click', settings.event_click_sidebar_img);
-                    
+                fsdiag.show();
                 
             }
             
-            function showLoading(wall) {
+        };
+        
+        var settings = $.extend({}, defaults, options); 
+
+        var methods = {
                 
-                l = $('#loading');
+            showLoading: function() {
+                
+                var l = $('#loading', wall);
                 l.css({
                     'left': wall.width()/2 - l.width()/2,
                     'top': wall.height()/2 - l.height()/2
@@ -589,9 +145,9 @@
                 $("span.ui-dialog-title", l).html("Please wait...");
                 l.show();
                 
-            }
-            
-            function showDialog(wall, msg) {
+            },
+                    
+            showDialog: function(wall, msg) {
                 dia = $('#dialog', wall);
                 $('#dialog_text', dia).html(msg);
                 dia.css({
@@ -599,9 +155,9 @@
                     'top': wall.height()/2 - dia.height()/2
                 });
                 dia.show();
-            }
+            },
             
-            function populateSidebar(wall, objnum) {
+            populateSidebar: function(wall, objnum) {
                 
                 url = settings.api_stub + objnum;
                         
@@ -676,8 +232,8 @@
                         for( k=0; k<settings.taxonomy.length; k++ ) {
                             
                             category = musobj[settings.taxonomy[k]];
-                            if(countGroups(category) > 0) {
-                                taxonomy_title = ucfirst(settings.taxonomy[k]);
+                            if(methods.countGroups(category) > 0) {
+                                taxonomy_title = methods.ucfirst(settings.taxonomy[k]);
                                 lines++;
                                 if(settings.tag_style == 'list') {
                                     info_html += '<li><strong>' + taxonomy_title + '</strong>';
@@ -687,7 +243,7 @@
                                     // TO DO: algoritmo for tag sizing
                                     s = Math.floor(Math.random()*6);
                                     cat = category[p];
-                                    category_name = ucfirst(cat.fields['name']);
+                                    category_name = methods.ucfirst(cat.fields['name']);
                                     if( cat.fields['museumobject_count'] > settings.min_category_count && category_name != 'Unknown') {
                                         lines++;
                                         info_html += '<li class="size-'+parseInt(s)+'"><a href="#" data-name="' + cat.model.split('.')[1] + '" data-pk="' + cat.pk + '" data-term="' + category_name + '" title="Browse images for \'' + category_name + '\'">' + category_name + '</a></li>';
@@ -720,9 +276,9 @@
                     }
                 });
                 
-            }
-            
-            function apiStart(wall, settings) {
+            },
+                    
+            apiStart: function(settings) {
                 
                 ajax_in_progress = true;
                 $('#panel .shuffle').addClass('disabled');
@@ -730,16 +286,16 @@
                 
                 $.ajax({
                     dataType: 'jsonp',
-                    url: buildUrl(),
+                    url: methods.buildUrl(),
                     success: function (json) {
                         
                         if(json.meta.result_count <= settings.min_category_count) {
                             
-                            showDialog(wall, settings.alert_msg_no_images);
+                            methods.showDialog(wall, settings.alert_msg_no_images);
                             
                         } else {
                         
-                            if(settings.show_loading) { showLoading(wall); };
+                            if(settings.show_loading) { methods.showLoading(); };
                         
                             if(typeof(cache_loop_id) != 'undefined') clearInterval(cache_loop_id);
                             if(typeof(fill_loop_id) != 'undefined') clearInterval(fill_loop_id);
@@ -757,12 +313,12 @@
                             // populate title bar and history
                             in_hist = false;
                             if(settings.category.id != null) {
-                                var title_text = 'Showing ' + settings.num_results + ' images for <span class="">' + ucfirst(settings.category.name) + ': '+ ucfirst(settings.category.term) + '</span>';
+                                var title_text = 'Showing ' + settings.num_results + ' images for <span class="">' + methods.ucfirst(settings.category.name) + ': '+ methods.ucfirst(settings.category.term) + '</span>';
                                 var cat_token = settings.category.id + settings.category.name + settings.category.term;
                                 cat_token = cat_token.replace(/ /gi, '').toLowerCase();
                                 if($.inArray(cat_token, settings.browse_hist) == -1) {
                                     settings.browse_hist.push(cat_token);
-                                    $("#histlist ul").append('<li><a href="#" data-name="' + settings.category.name + '" data-pk="' + settings.category.id + '" data-term="' + settings.category.term + '">' + ucfirst(settings.category.name) + ': ' + settings.category.term + '</a></li>');
+                                    $("#histlist ul").append('<li><a href="#" data-name="' + settings.category.name + '" data-pk="' + settings.category.id + '" data-term="' + settings.category.term + '">' + methods.ucfirst(settings.category.name) + ': ' + settings.category.term + '</a></li>');
                                 }
                                 $("#histlist").show();
                             } else if(settings.search_term != '') {
@@ -794,7 +350,6 @@
                             row = 0;
                             o = offset_anchor;
                             for(k=0; k < tiles.size(); k++) {
-                                
                                 $(tiles[k]).data('offset', o);
                                 count++;
                                 if(count==num_cols) {
@@ -809,17 +364,17 @@
                             ajax_in_progress = false;
                             
                             cache = new Array();
-                            cache_loop_id = setInterval(function() { fillCache(settings, cache) }, settings.cache_interval);
-                            fill_loop_id = setInterval(function() { fillTiles(settings, cache) }, settings.fill_interval);
+                            cache_loop_id = setInterval(function() { methods.fillCache(settings, cache) }, settings.cache_interval);
+                            fill_loop_id = setInterval(function() { methods.fillTiles(settings, cache) }, settings.fill_interval);
                             
                         }
                         
                     }
                 });
                 return true;
-            }
-            
-            function resize(wall) {
+            },
+                    
+            resize: function(wall) {
                 
                 d = settings.sizes[settings.current_size];
                 settings.tile_w = d.dim;
@@ -833,7 +388,7 @@
                 $('#grid', wall).html('');
                 $('#panel a.resize').removeClass('selected');
                 $(this).addClass('selected');
-                draw(wall);
+                methods.draw(wall);
                 // add offset attributes
                 offset_anchor = 0;
                 num_cols = $("#grid>ul:first li", wall).size();
@@ -855,9 +410,9 @@
                     
                 }
                         
-            }
-            
-            function buildUrl(offset, limit) {
+            },
+                    
+            buildUrl: function(offset, limit) {
                 
                 if(typeof(offset)=='undefined' || isNaN(offset)) {
                     offset = 0;
@@ -872,13 +427,12 @@
                     url = settings.api_stub;
                     url += '?' + settings.category.name + '=' + settings.category.id;
                     url += '&getgroup=' + settings.category.name;
-                    display_term = ucfirst(settings.category.term);
+                    display_term = methods.ucfirst(settings.category.term);
                     
                 } else {
-                
                     url = settings.api_stub + settings.api_search_path;
                     url += "?q=" + settings.search_term;
-                    display_term = ucfirst(settings.search_term);
+                    display_term = methods.ucfirst(settings.search_term);
                     
                 }
                 url += '&limit=' + limit;
@@ -887,17 +441,17 @@
                 
                 return url;
                 
-            }
-            
-            function drawEmptyRow(n) {
+            },
+                    
+            drawEmptyRow: function(n) {
                 
                 r = '<ul>';
                 for(j=0; j < n; j++) { r += settings.blank_tile; }
                 r += '</ul>';
                 return r;
-            }
+            },
             
-            function styleTiles(wall) {
+            styleTiles: function(wall) {
              
                 $('#grid li', wall).css({
                     'width': settings.tile_w,
@@ -907,9 +461,9 @@
                     'border-color': settings.tile_border_color
                 });
                 
-            }
-            
-            function countGroups(category) {
+            },
+                    
+            countGroups: function(category) {
                 
                 var c = 0;
                 for ( n = 0; n < category.length; n++ ) {
@@ -919,15 +473,14 @@
                 }
                 return c;
                 
-            }
-            
-            function ucfirst(str) {
-                
+            },
+                    
+            ucfirst: function(str) {
                 return str.charAt(0).toUpperCase() + str.substr(1);
 
-            }
-            
-            function draw(wall) {
+            },
+                    
+            draw: function(wall) {
             
                 // before we do anything, let's get the current anchor offset
                 
@@ -937,7 +490,7 @@
                 var grid = $("#grid", wall);
                 
                 grid.width(grid.width() + wall.position().left + wall.width());
-                tiles = {
+                var tiles = {
                     'N': Math.ceil(grid.position().top / settings.cell_h),
                     'S': Math.ceil((wall.height() - grid.position().top + grid.height()) / settings.cell_h),
                     'E': Math.ceil((grid.position().left + grid.width()) / settings.cell_w),
@@ -950,7 +503,7 @@
                 // add new rows to top
                 if(tiles.N) {
                     for(i=0;i<tiles.N;i++) {
-                        grid.prepend(drawEmptyRow($("#grid ul:first > li", wall).size()));
+                        grid.prepend(methods.drawEmptyRow($("#grid ul:first > li", wall).size()));
                     }
                     do_offsets = true;
                 }
@@ -958,7 +511,7 @@
                 // add new rows to bottom
                 if(tiles.S) {
                     for(i=0;i<tiles.S;i++) {
-                        grid.append(drawEmptyRow($("#grid ul:first > li", wall).size()));
+                        grid.append(methods.drawEmptyRow($("#grid ul:first > li", wall).size()));
                     }
                     do_offsets = true;
                 }
@@ -991,10 +544,10 @@
                 })
                 
                 // make sure all the new tiles are styled up
-                styleTiles(wall);
+                methods.styleTiles(wall);
                 
                 // find tiles outside the viewport and remove them
-                remove = {
+                var remove = {
                     'N': Math.floor(grid.position().top * -1 / settings.cell_h),
                     'S': Math.floor( (grid.height() - wall.height() + grid.position().top) / settings.cell_h),
                     'E': Math.floor((grid.width() - wall.width() + grid.position().left) / settings.cell_w),
@@ -1029,12 +582,11 @@
                 grid.width($("#grid ul:first > li", wall).length * settings.cell_w);
                             
                 if(do_offsets) {
-                    updateOffsets(wall, tiles, remove, settings);
+                    methods.updateOffsets(wall, tiles, remove, settings);
                 }
-            };
-            
-            
-            function updateOffsets(wall, tiles, remove, settings) {
+            },
+                    
+            updateOffsets: function(wall, tiles, remove, settings) {
             
                 offset_anchor = parseInt(offset_anchor);
                 
@@ -1092,9 +644,9 @@
                     
                 }
                 
-            }
+            },
              
-            function getImageUrl(url_base, image_ref) {
+            getImageUrl: function(url_base, image_ref) {
                 
                 try {
                     u = url_base + image_ref.substr(0, 6) + "/" + image_ref + settings.tile_sidebar_image_suffix + ".jpg";
@@ -1102,16 +654,18 @@
                     u = "";
                 }
                 return u;
-            }
-            
-            function retrieveFromCache(offset) {
+            },
+              
+                    
+            retrieveFromCache: function(offset) {
+                
                 for(q in cache) {
                     if(cache[q].offset == offset) return cache[q];
                 }
                 if(cache_full) {
                     $.ajax({
                             dataType: 'jsonp',
-                            url: buildUrl(offset, 1),
+                            url: methods.buildUrl(offset, 1),
                             success: function (json) {
                                 for(i=0;i<json.records.length;i++) {
                                     record = json.records[i];
@@ -1131,9 +685,9 @@
                         });
                 }
                 return false;
-            }
-                
-            function fillCache(settings, cache) {
+            },
+                        
+            fillCache: function(settings, cache) {
 
                 if(typeof(offset)=='undefined' || isNaN(offset) || offset < 0) {
                     offset = 0;
@@ -1146,7 +700,7 @@
                     if(!ajax_in_progress) {
                 
                         ajax_in_progress = true;
-                        url = buildUrl(offset, settings.limit);
+                        url = methods.buildUrl(offset, settings.limit);
                         $.ajax({
                             dataType: 'jsonp',
                             url: url,
@@ -1164,7 +718,6 @@
                                     }
                                     cache_obj.title = objname;
                                     cache.push(cache_obj);
-                                    
                                     offset ++;
                                 };
                                 if(offset >= settings.max_offset && cache.length < settings.max_offset) { offset = 0; };
@@ -1181,31 +734,31 @@
                     allow_shuffle = true;
                     clearInterval(cache_loop_id);
                     cache_full = true;
-                    setTimeout(hideLoading, settings.hide_loader_time);
+                    setTimeout(methods.hideLoading, settings.hide_loader_time);
                     $("#loading .loaded").html(settings.display_results);
                     r = Math.floor(Math.random()*settings.tips.length);
                     $('#loading span.ui-dialog-title').html('Done.');
                     $('#loading .results_info').html('<span style="float: left; margin-right: .3em;" class="ui-icon ui-icon-info"></span><strong>Tip:</strong> ' + settings.tips[r]);
                 }
                 
-            }
+            },
             
-            function hideLoading() {
+            hideLoading: function() {
                 $('#loading').fadeOut();
-            }
+            },
             
-            function fillTile(tile, item) {
+            fillTile: function(tile, item) {
                 
                 if(tile && typeof(tile) != 'undefined') {
                     tile
-                        .css({ 'background-image': 'url('+getImageUrl(settings.images_url, item.imref)+')'})
+                        .css({ 'background-image': 'url('+methods.getImageUrl(settings.images_url, item.imref)+')'})
                         .attr('title', item.title + ' [' + item.num + ']')
                         .data('objnum', item.num)
                         .removeClass('blank');
                 }
-            }
+            },
             
-            function fillTiles(settings, cache) {
+            fillTiles: function(settings, cache) {
                
                 switch(settings.fill_direction) {
                     case 'forwards':
@@ -1222,13 +775,458 @@
                         t = $("ul li.blank:first");
                         break;
                 }
-                var item = retrieveFromCache(t.data('offset'), cache);
+                var item = methods.retrieveFromCache(t.data('offset'), cache);
                 if(item) {
-                    fillTile(t, item);
+                    methods.fillTile(t, item);
                 } 
                 
             }
+                
+                
+        }
+        
+
+        settings.current_size = settings.start_size;
+        settings.tile_w = settings.sizes[settings.current_size].dim;
+        settings.tile_h = settings.sizes[settings.current_size].dim;
+        settings.tile_sidebar_image_suffix = settings.sizes[settings.current_size].suff;
+        settings.cell_w = settings.tile_w + settings.tile_margin + 2; // the '2' accounts for borders
+        settings.cell_h = settings.tile_h + settings.tile_margin + 2; 
+        settings.start_rows = Math.ceil(settings.height / settings.cell_h);
+        settings.start_cols = Math.ceil(settings.width / settings.cell_w);
+     
+        settings.sidebar_width = settings.sidebar_image_size;
+     
+        // write out an empty grid
+        var grid_html = '<div id="grid">';
+        for(i=0; i < settings.start_rows; i++) {
+            grid_html += methods.drawEmptyRow(settings.start_cols);
+        }
+        grid_html += '</div>';
+        this.html(grid_html);
+        
+        // record the starting size and position, so we can go back to it after fullscreen
+        settings.start = {
+            'top': this.position().top,
+            'left': this.position().left
+        }
+        settings.fullscreen = false;
+
+        // apply styles to the empty grid
+        this.css({
+            'width': settings.width,
+            'height': settings.height,
+            'background-color': settings.background_color,
+            'border': settings.wall_border
+        });
+        $("#grid", this).css({
+            'width': settings.cell_w * settings.start_cols
+        });
+        methods.styleTiles();
+
+        // control panel
+        var panel   =     '<div id="panel" class="ui-widget ui-widget-content ui-corner-all">';
+        panel       +=    '<ul id="icons">';
+        panel       +=    '<li><input class="ui-state-default ui-corner-all" type="text" name="search" value="'+settings.search_box_default+'"></li>';
+        panel       +=    '<li class="ui-state-default ui-corner-all"><span class="submitsearch ui-icon ui-icon-search" title="Submit search"></span></li>';
+        panel       +=    '<li class="ui-state-default ui-corner-all"><span class="fullscreen ui-icon ui-icon-arrow-4-diag" title="Toggle full screen"></span></li>';
+        panel       +=    '<li class="ui-state-default ui-corner-all"><span class="shuffle ui-icon ui-icon-shuffle" title="Shuffle images"></span></li>';
+        panel       +=    '<li class="ui-state-default ui-corner-all"><span class="zoomin ui-icon ui-icon-zoomin" title="Larger tiles"></span></li>';
+        panel       +=    '<li class="ui-state-default ui-corner-all"><span class="zoomout ui-icon ui-icon-zoomout" title="Smaller tiles"></span></li>';
+        if(settings.enable_history) { panel += '<li class="ui-state-default ui-corner-all"><span class="togglehist ui-icon ui-icon-clock" title="Toggle history panel"></span></li>' };
+        if(settings.enable_clipboard) { panel += '<li class="ui-state-default ui-corner-all"><span class="toggleclip ui-icon ui-icon-clipboard" title="Toggle clipboard"></span></li>' };
+        panel       +=    '</ul>'
+        panel       +=    '</div>';
+        
+        // sidebar
+        var sidebar =      '<div id="sidebar"  class="ui-dialog ui-widget ui-widget-content ui-corner-all">';
+        sidebar     +=     '<div class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix"><span class="ui-dialog-title object-title"></span><a href="#" class="ui-dialog-titlebar-close ui-corner-all" role="button"><span class="ui-icon ui-icon-closethick">close</span></a></div>';
+        sidebar     +=     '<div class="sidebar_image"></div>';
+        sidebar     +=     '<div class="sidebar_info"></div>';
+        sidebar     +=     '</div>';
+        
+        // dialog box
+        var dialog      =       '<div id="dialog" class="ui-dialog ui-widget ui-widget-content ui-corner-all">';
+        dialog          +=      '<div class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix"><span class="ui-dialog-title">'+settings.alert_title+'</span><a href="#" class="ui-dialog-titlebar-close ui-corner-all" role="button"><span class="ui-icon ui-icon-closethick">close</span></a></div>';
+        dialog          +=      '<p><span style="float: left; margin-right: .3em;" class="ui-icon ui-icon-alert"></span><span id="dialog_text"></span></p>';
+        dialog          +=      '<div class="ui-dialog-buttonpane ui-widget-content ui-helper-clearfix"><div class="ui-dialog-buttonset"><button type="button" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button" aria-disabled="false"><span class="ui-button-text">Ok</span></button></div></div>';
+        dialog          +=      '</div>';
+        
+        // loading dialog
+        var loading     =       '<div id="loading" class="ui-dialog ui-widget ui-widget-content ui-corner-all">';
+        loading          += '<div class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix"><span class="ui-dialog-title">Please wait...</span><a href="#" class="ui-dialog-titlebar-close ui-corner-all" role="button"><span class="ui-icon ui-icon-closethick">close</span></a></div>';
+        loading         +=      '<p class="results_info"></p>';
+        loading         +=      '<div id="progressbar"></div>';
+        loading         +=      '</div>';
+        
+        // title bar
+        var title       =       '<div id="title" class="ui-dialog ui-widget ui-widget-content ui-corner-all">';
+        title           +=      '<p class="title_info"></p>';
+        title           +=      '</div>';
+        
+        // fullsize dialog
+        var fs          =       '<div id="fullsize" class="ui-dialog ui-widget ui-widget-content ui-corner-all">';
+        fs              +=       '<div class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix"><span class="ui-dialog-title"></span><a href="#" class="ui-dialog-titlebar-close ui-corner-all" role="button"><span class="ui-icon ui-icon-closethick">close</span></a></div>';
+        fs              +=      '<img src="" alt="" title="" />';
+        fs              +=      '</div>';
+        
+        // history panel
+        var hist     =       '<div id="hist" class="ui-dialog ui-widget ui-widget-content ui-corner-all">';
+        hist          += '<div class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix"><span class="ui-dialog-title">Your history</span><a href="#" class="ui-dialog-titlebar-close ui-corner-all" role="button"><span class="ui-icon ui-icon-closethick">close</span></a></div>';
+        hist         +=      '<div id="histlist" class="ui-widget ui-state-highlight ui-corner-all hide"><ul class="list"></ul></div>';
+        hist         +=      '</div>';
+        
+        var clipboard     =       '<div id="clipboard" class="ui-dialog ui-widget ui-widget-content ui-corner-all">';
+        clipboard          += '<div class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix"><span class="ui-dialog-title">Your clipboard</span><a href="#" class="ui-dialog-titlebar-close ui-corner-all" role="button"><span class="ui-icon ui-icon-closethick">close</span></a></div>';
+        clipboard         +=      '<div id="clipboardlist" class="ui-widget ui-state-highlight ui-corner-all hide"><ul class="list"></ul><div class="clearfix"></div></div>';
+        clipboard         +=      '</div>';
+        
+        var disabled     =       '<div id="disabled" class="ui-widget-overlay"></div>';
+        
+        $("#grid").after(sidebar).after(panel).after(dialog).after(loading).after(title).after(fs).after(disabled).after(hist).after(clipboard);
+        $('#panel').css({
+            'left': this.width()/2 - $('#panel').width()/2,
+            'bottom': 0
         })
+        allow_shuffle = false;
+        fullsize_dragged = false;
+        cache_full = false;
+        settings.browse_hist = [];
+        settings.cliplist = [];
+        settings.clipboard = [];
+        
+        methods.apiStart(settings);
+        
+        // initialize the draggable grid
+        $('#grid', this).draggable({
+        
+            cursor: 'pointer',
+            delay: 150,
+            stop: function() { 
+                methods.draw($(this.parentNode)); // <== 'this' is the draggable, which is $('#grid'), so its parentNode is the wall div
+            }
+            
+        });
+        
+        $('#loading', this).draggable({
+            containment: 'parent'
+        });
+
+        $('#fullsize', this).draggable({
+            containment: 'parent',
+            stop: function() {
+                fullsize_dragged = true;
+            }
+        });
+
+        $('#hist', this).draggable({
+            containment: 'parent'
+        });
+
+        $('#clipboard', this).draggable({
+            containment: 'parent'
+        });
+
+        this
+            .delegate('#icons li span', 'mouseover', function(event) {
+                $(this).parent().addClass('ui-state-hover');
+            })
+            .delegate('#icons li span', 'mouseout', function(event) {
+                $(this).parent().removeClass('ui-state-hover');
+            })
+            .delegate('#panel span.fullscreen', 'click', function(event) {
+                event.preventDefault();
+                
+                var sidebar = $("#sidebar", wall);
+                
+                if (settings.fullscreen) {
+                    // shrink
+                    $("body").css({'overflow': 'auto'});
+                    wall.prependTo(old_parent)
+                        .animate({
+                        'width': settings.width,
+                        'height': settings.height,
+                    }, settings.fullscreen_speed, function() { 
+                        
+                        if(sidebar.is(':visible')) {
+                            sidebar.animate({
+                                'width': settings.sidebar_width,
+                                'height': wall.height() - 2*settings.padding,
+                                'top': 0,
+                                'left': wall.width() - (settings.sidebar_width + 2*settings.padding),
+                                'padding': settings.padding
+                            }, settings.fullscreen_speed, function() {});
+                        }
+                        
+                        var p = $('#panel', wall);
+                        $("#sidebar").hide();
+                        p.css({'left':0}).css({
+                            'left': wall.width()/2 - p.width()/2,
+                            'bottom': 0
+                        })
+                        var l = $('#loading');
+                        l.css({
+                            'left': wall.width()/2 - l.width()/2,
+                        })
+                        settings.fullscreen = false;
+                        methods.draw(wall);
+                        
+                    });
+                    
+                } else {
+                    // expand
+                    old_parent = wall.parent();
+                    wall.prependTo($("body"));
+                    $("body").css({'overflow': 'hidden'});
+                    $(window).scrollTop(0);
+                    wall.animate({
+                        'width': $(document).width(),
+                        'height': $(window).height(),
+                    }, settings.fullscreen_speed, function() { 
+                       
+                        if(sidebar.is(':visible')) {
+                            sidebar.animate({
+                                'width': settings.sidebar_width,
+                                'height': wall.height() - 2*settings.padding,
+                                'top': 0,
+                                'left': wall.width() - (settings.sidebar_width + 2*settings.padding),
+                                'padding': settings.padding
+                            }, settings.fullscreen_speed, function(){
+                                $(".sidebar_info", sidebar).height(sidebar.height() - $(".sidebar_image").height());
+                            });
+                        }
+                        
+                        var p = $('#panel');
+                        p.css({
+                            'left': wall.width()/2 - p.width()/2,
+                            'bottom': 0
+                        })
+                        var l = $('#loading');
+                        l.css({
+                            'left': wall.width()/2 - l.width()/2,
+                        })
+                        settings.fullscreen = true;
+                        methods.draw(wall);
+                    });
+                    
+                }
+                
+            })
+            .delegate('#panel span.zoomin', 'click', function(event) {
+                
+                event.preventDefault();
+                
+                max_size = settings.sizes.length-1;
+                if(settings.current_size < max_size) {
+                    settings.current_size++;
+                    methods.resize(wall);
+                    
+                } else {
+                    methods.showDialog(wall, settings.alert_msg_zoom_max);
+                }
+                 
+            })
+            .delegate('#panel span.zoomout', 'click', function(event) {
+                
+                if(settings.current_size > 0) {
+                
+                    settings.current_size--;
+                    methods.resize(wall);
+                   
+                    
+                } else {
+                    methods.showDialog(wall, settings.alert_msg_zoom_min);
+                }
+                 
+            })
+            .delegate('#panel span.togglehist', 'click', function(event) {
+                
+                $("#hist", wall).toggle('fast');
+                
+            })
+            .delegate('#panel span.toggleclip', 'click', function(event) {
+                
+                $("#clipboard", wall).toggle('fast');
+                
+            })
+            .delegate('#panel span.submitsearch', 'click', function(event) {
+                
+                search_term = $('#panel input[name="search"]', wall).val();
+                if(search_term!='' && search_term != settings.search_box_default) {
+                    
+                    settings.category = {
+                        'id': null,
+                        'name': '',
+                        'term': '',
+                    }
+                    settings.search_term = search_term;
+                    methods.apiStart(settings);
+                    
+                    
+                } else {
+                    methods.showDialog(wall, settings.alert_msg_enter_search);
+                }
+                
+            })
+            .delegate('#panel input[name="search"]', 'keyup', function(event) {
+               
+                event.preventDefault();
+                
+                var code = (event.keyCode ? event.keyCode : event.which);
+                if(code == 13) { // User has pressed the enter key
+                    search_term = $(this).val();
+                    
+                    if(search_term!='' && search_term != settings.search_box_default) {
+                        
+                        settings.category = {
+                            'id': null,
+                            'name': '',
+                            'term': ''
+                        }
+                        settings.search_term = search_term;
+                        methods.apiStart(settings);
+
+                    } else {
+                        methods.showDialog(wall, settings.alert_msg_enter_search);
+                    }
+                }
+
+            })
+            .delegate('#panel input[name="search"]', 'focus', function(event) {
+                
+                event.preventDefault();
+                $(this).val('');
+                
+            })
+            .delegate('#panel input[name="search"]', 'click', function(event) {
+                
+                event.preventDefault();
+                $(this).val('');
+                
+            })
+            .delegate('#histlist a', 'click', function(event) {
+                
+                event.preventDefault();
+                if($(this).data('search_term')) {
+                    settings.category = {
+                        'id': null,
+                        'name': '',
+                        'term': ''
+                    }
+                    settings.search_term = $(this).data('search_term');
+                } else {
+                    settings.category = {
+                        'id': $(this).data('pk'),
+                        'name': $(this).data('name'),
+                        'term': $(this).data('term')
+                    }
+                }
+                methods.apiStart(settings);
+                
+            })
+            .delegate('.searchable', 'click', function(event) {
+               
+                search_term = $(this).html();
+                $('#panel input[name="search"]', wall).val(search_term);
+                if(search_term!='' && search_term != settings.search_box_default) {
+                    
+                    settings.category = {
+                        'id': null,
+                        'name': '',
+                        'term': ''
+                    }
+                    settings.search_term = search_term;
+                    methods.apiStart(settings);
+
+                } else {
+                    methods.showDialog(wall, settings.alert_msg_enter_search);
+                }
+                
+            })
+            .delegate('#panel span.shuffle', 'click', function(event) {
+               
+                if(allow_shuffle) {
+                
+                    keys = [];
+                    shuffle = [];
+                    for(d=0; d<settings.max_offset; d++) { shuffle[Math.random() * 1] = d; }
+                    for(r in shuffle) { keys.push(r); };
+                    keys.sort();
+                    tiles = $('#grid li', wall);
+                    count = 0;
+                    for(k in keys) {
+                        methods.fillTile($(tiles[count]), methods.retrieveFromCache(shuffle[keys[k]], cache));
+                        count ++;
+                    }
+                    
+                }
+                
+            })
+            .delegate('.ui-dialog-titlebar-close', 'click', function(event) {
+                event.preventDefault();
+                $(this).parent().parent().hide();
+            })
+            .delegate('button', 'click', function(event) {
+                event.preventDefault();
+                $('#dialog', wall).hide();
+            })
+            .delegate('#grid ul li', 'click', function(event) { methods.populateSidebar(wall, $(this).data('objnum')); })
+            .delegate('#sidebar a.save', 'click', function(event) {
+                
+                event.preventDefault();
+                
+                objnum = $(this).data('objnum');
+                imref = $(this).data('imref');
+                
+                clipobj = {
+                    objnum: objnum,
+                    name: $(this).data('name'),
+                    img: settings.images_url + imref.substr(0, 6) + "/" + imref + "_jpg_s.jpg"
+                }
+                
+                if($.inArray($(this).data('objnum'), settings.cliplist) == -1) { 
+
+                    settings.cliplist.push(objnum);
+                    settings.clipboard.push(clipobj);
+                    var clipitem = '<li data-objnum="' + objnum + '">';
+                    clipitem += '<img src="' + clipobj.img + '" alt="' + clipobj.name + '" title="' + clipobj.name + '" />';
+                    clipitem += '</li>';
+                    $("#clipboardlist ul").append(clipitem); 
+                    $("#clipboardlist").show(); 
+                    
+                }
+                
+            })
+            .delegate('#clipboard li', 'click', function(event) { methods.populateSidebar(wall, $(this).data('objnum')); })
+            .delegate('#sidebar a.close', 'click', function(event) { 
+             
+                event.preventDefault();
+                
+                $('#sidebar', wall).hide();
+                
+            })
+            .delegate('#browse a', 'click', function(event) { 
+               
+                event.preventDefault();
+                
+                settings.category = {
+                    'id': $(this).data('pk'),
+                    'name': $(this).data('name'),
+                    'term': $(this).data('term'),
+                }
+                methods.apiStart(settings);
+                $('#panel input[name="search"]', wall).val('New search');
+        
+            })
+            .delegate('#sidebar img', 'click', settings.event_click_sidebar_img);
+            
+
+        
+        //~ return this.each(function() {
+        //~ 
+            //~ 
+            //~ 
+        //~ })
 
     }
 
