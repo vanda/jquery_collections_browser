@@ -1,4 +1,4 @@
-#wall { overflow: hidden; position: relative; margin: 0 auto; z-index: 999; }
+#wall { overflow: hidden; position: relative; margin: 0 auto; z-index: 999; font-size: 0.7em; }
 #wall ul { list-style: none!important; margin: 0px!important;}
 #grid { overflow: hidden; }
 
@@ -20,7 +20,7 @@
 #sidebar div.sidebar_info { overflow-y: auto; }
 #sidebar div.sidebar_info .ui-widget { padding: 8px; }
 ul.list { margin-bottom: 0.25em; padding-left: 1.0em; }
-ul.list li { padding: 0px; margin-bottom: 0px;  }
+ul.list li { padding: 0px; margin-bottom: 0px; line-height: 1.5em;  }
 ul.list ul li { margin-left: 1.0em; }
 #sidebar img { cursor: pointer; }
 #sidebar ul li a { text-decoration: none; }
@@ -40,9 +40,6 @@ ul.list ul li { margin-left: 1.0em; }
 #clipboardlist ul { padding-left: 4px!important; }
 #clipboardlist li { float: left; padding: 8px 2px 0 0; cursor: pointer; }
 #clipboardlist { padding-left: 0; overflow: auto; }
-/*
-#clipboardlist { margin-top: 8px; }
-*/
 
 .tagcloud { text-align: center; margin: 0; line-height: 3.0em; }
 .tagcloud li { display: inline; margin: 8px; word-wrap: break-word; }
