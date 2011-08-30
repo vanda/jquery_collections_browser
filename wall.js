@@ -145,8 +145,8 @@
                         '<li class="ui-state-default ui-corner-all"><span class="shuffle ui-icon ui-icon-shuffle" title="Shuffle images"></span></li>' +
                         '<li class="ui-state-default ui-corner-all"><span class="zoomin ui-icon ui-icon-zoomin" title="Larger tiles"></span></li>' +
                         '<li class="ui-state-default ui-corner-all"><span class="zoomout ui-icon ui-icon-zoomout" title="Smaller tiles"></span></li>' +
-                        '<li class="ui-state-default ui-corner-all"><span class="togglehist ui-icon ui-icon-clock" title="Toggle history panel"></span></li>' +
-                        '<li class="ui-state-default ui-corner-all"><span class="toggleclip ui-icon ui-icon-clipboard" title="Toggle clipboard"></span></li>' +
+                        '<li class="ui-state-default ui-corner-all hide"><span class="togglehist ui-icon ui-icon-clock" title="Toggle history panel"></span></li>' +
+                        '<li class="ui-state-default ui-corner-all hide"><span class="toggleclip ui-icon ui-icon-clipboard" title="Toggle clipboard"></span></li>' +
                         '</ul>'  +
                         '</div>',
             
@@ -889,6 +889,13 @@
         settings.browse_hist = [];
         settings.cliplist = [];
         settings.clipboard = [];
+        
+        if(settings.enable_history) {
+            $('span.togglehist').parent().removeClass('hide');
+        }
+        if(settings.enable_clipboard) {
+            $('span.toggleclip').parent().removeClass('hide');
+        }
         
         methods.apiStart(settings);
         
