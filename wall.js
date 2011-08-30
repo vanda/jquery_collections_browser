@@ -8,7 +8,29 @@
  
 (function ($) {
     
-  $.fn.wall = function(options) { 
+    $.fn.centerHoriz = function() {
+        
+        return this.each(function() {
+
+            var $this = $(this);
+            $this.css({'left': $this.parent().width()/2 - $this.width()/2});
+
+        });
+        
+    };
+    
+    $.fn.centerVert = function() {
+        
+        return this.each(function() {
+
+            var $this = $(this);
+            $this.css({'top': $this.parent().height()/2 - $this.height()/2});
+
+        });
+        
+    };
+    
+    $.fn.wall = function(options) { 
         
         var wall = this;
         
@@ -41,6 +63,7 @@
             'show_more_link': false, // whether to display the link to the item details page in the sidebar
             'enable_history': false, 
             'enable_clipboard': false,
+            'enable_map': false,
             'max_history': 20, // maximum items in history
                             
             // messaging
@@ -81,7 +104,7 @@
             'category-stub': '', // category to retrieve images from 
             'sidebar_image_suffix': '_jpg_w',
             'large_image_suffix': '_jpg_l',
-            
+                        
             // html fragments
             'blank_tile': '<li class="blank"></li>',
             
@@ -133,7 +156,7 @@
         
         var settings = $.extend({}, defaults, options); 
         
-        var cache = [], cache_full = false, fill_loop_id, cache_loop_id, ajax_in_progress = false, offset = 0, offset_anchor = 0, allow_shuffle = false, fullsize_dragged = false, old_parent;
+        var cache = [], cache_full = false, fill_loop_id, cache_loop_id, ajax_in_progress = false, offset = 0, offset_anchor = 0, allow_shuffle = false, fullsize_dragged = false, old_parent, map=null, map_markers=[];
 
         var fragments = {
          
@@ -147,6 +170,7 @@
                         '<li class="ui-state-default ui-corner-all"><span class="zoomout ui-icon ui-icon-zoomout" title="Smaller tiles"></span></li>' +
                         '<li class="ui-state-default ui-corner-all hide"><span class="togglehist ui-icon ui-icon-clock" title="Toggle history panel"></span></li>' +
                         '<li class="ui-state-default ui-corner-all hide"><span class="toggleclip ui-icon ui-icon-clipboard" title="Toggle clipboard"></span></li>' +
+                        '<li class="ui-state-default ui-corner-all hide"><span class="togglemap ui-icon ui-icon-map" title="Map this set"></span></li>' +
                         '</ul>'  +
                         '</div>',
             
@@ -187,7 +211,9 @@
                         '<div id="clipboardlist" class="ui-widget ui-state-highlight ui-corner-all hide"><ul class="list"></ul><div class="clearfix"></div></div>' +
                         '</div>',
             
-            disabled:   '<div id="disabled" class="ui-widget-overlay"></div>'
+            disabled:   '<div id="disabled" class="ui-widget-overlay"></div>',
+            
+            map:        '<div id="mapwrapper" class="ui-dialog"><div id="mapcanvas"></div></div>'
             
         };
 
@@ -196,23 +222,17 @@
             showLoading: function() {
                 
                 var l = $('#loading', wall);
-                l.css({
-                    'left': wall.width()/2 - l.width()/2,
-                    'top': wall.height()/2 - l.height()/2
-                });
                 $("span.ui-dialog-title", l).html("Please wait...");
-                l.show();
+                l.centerHoriz().centerVert().show();
                 
             },
                     
             showDialog: function(wall, msg) {
-                var dia = $('#dialog', wall);
-                $('#dialog_text', dia).html(msg);
-                dia.css({
-                    'left': wall.width()/2 - dia.width()/2,
-                    'top': wall.height()/2 - dia.height()/2
-                });
-                dia.show();
+                
+                var d = $('#dialog', wall);
+                $('#dialog_text', d).html(msg);
+                d.centerHoriz().centerVert().show();
+                
             },
             
             populateSidebar: function(wall, objnum) {
@@ -301,7 +321,7 @@
                                     var s = Math.floor(Math.random()*6);
                                     var cat = category[p];
                                     var category_name = methods.ucfirst(cat.fields.name);
-                                    if( cat.fields.museumobject_count > settings.min_category_count && category_name != 'Unknown') {
+                                    if( cat.fields.museumobject_image_count > settings.min_category_count && category_name != 'Unknown') {
                                         lines++;
                                         info_html += '<li class="size-'+parseInt(s, 10)+'"><a href="#" data-name="' + cat.model.split('.')[1] + '" data-pk="' + cat.pk + '" data-term="' + category_name + '" title="Browse images for \'' + category_name + '\'">' + category_name + '</a></li>';
                                     }
@@ -344,6 +364,14 @@
                     dataType: 'jsonp',
                     url: methods.buildUrl(),
                     success: function (json) {
+                        
+                        if(settings.enable_map) {
+                            for(var i=0; i<map_markers.length; i++) {
+                                var p = map_markers[i]
+                                p.setMap(null);
+                            }
+                        }
+                        map_markers.length=0;
                         
                         if(json.meta.result_count <= settings.min_category_count) {
                             
@@ -509,12 +537,12 @@
                 });
                 
             },
-                    
+                
             countGroups: function(category) {
                 
                 var c = 0;
                 for (var n = 0; n < category.length; n++ ) {
-                    if(category[0].fields.name != 'Unknown' && category[0].fields.museumobject_count > settings.min_category_count) {
+                    if(category[0].fields.name != 'Unknown' && category[0].fields.museumobject_image_count > settings.min_category_count) {
                         c++;
                     }
                 }
@@ -762,6 +790,8 @@
                                     cache_obj.offset = offset;
                                     cache_obj.imref = record.fields.primary_image_id;
                                     cache_obj.num = record.fields.object_number;
+                                    cache_obj.lng = record.fields.longitude;
+                                    cache_obj.lat = record.fields.latitude;
                                     if(record.fields.title) {
                                         objname = record.fields.object + ' ' + record.fields.title;
                                     } else {
@@ -770,6 +800,21 @@
                                     cache_obj.title = objname;
                                     cache.push(cache_obj);
                                     offset ++;
+                                    
+                                    if(settings.enable_map) {
+                                        
+                                        var point = new google.maps.LatLng(cache_obj.lat, cache_obj.lng);
+                                        var marker = new google.maps.Marker({
+                                            position: point,
+                                            title: cache_obj.title
+                                        });
+                                        map_markers.push(marker);
+                                        if(map && !marker.map) {
+                                           marker.setMap(map); 
+                                        }
+                                        
+                                    }
+                                    
                                 }
                                 if(offset >= settings.max_offset && cache.length < settings.max_offset) { offset = 0; }
                                 ajax_in_progress = false;
@@ -881,20 +926,20 @@
         for(frag in fragments) {
             grid.after(fragments[frag]);
         }
-        $('#panel', this).css({
-            'left': this.width()/2 - $('#panel').width()/2,
-            'bottom': 0
-        });
+        $('#panel', this).centerHoriz().css({'bottom': 0});
         
         settings.browse_hist = [];
         settings.cliplist = [];
         settings.clipboard = [];
         
         if(settings.enable_history) {
-            $('span.togglehist').parent().removeClass('hide');
+            $('span.togglehist', '#panel').parent().removeClass('hide');
         }
         if(settings.enable_clipboard) {
-            $('span.toggleclip').parent().removeClass('hide');
+            $('span.toggleclip', '#panel').parent().removeClass('hide');
+        }
+        if(settings.enable_map) {
+            $('span.togglemap', '#panel').parent().removeClass('hide');
         }
         
         methods.apiStart(settings);
@@ -905,7 +950,7 @@
             cursor: 'pointer',
             delay: 150,
             stop: function() { 
-                methods.draw($(this.parentNode)); // <== 'this' is the draggable, which is $('#grid'), so its parentNode is the wall div
+                methods.draw($(this.parentNode));
             }
             
         });
@@ -960,15 +1005,15 @@
                             }, settings.fullscreen_speed, function() {});
                         }
                         
-                        var p = $('#panel', wall);
                         $("#sidebar").hide();
-                        p.css({'left':0}).css({
-                            'left': wall.width()/2 - p.width()/2,
-                            'bottom': 0
-                        });
-                        $('#loading').css({ 'left': wall.width()/2 - $('#loading').width()/2 });
+                        $('#panel').centerHoriz().css({'bottom': 0});
+                        $('#loading').centerHoriz();
                         settings.fullscreen = false;
                         methods.draw(wall);
+                        if(map) {
+                            google.maps.event.trigger(map, "resize");
+                            $('#mapwrapper', wall).centerHoriz().centerVert();
+                        }
                         
                     });
                     
@@ -995,17 +1040,15 @@
                             });
                         }
                         
-                        var p = $('#panel');
-                        p.css({
-                            'left': wall.width()/2 - p.width()/2,
-                            'bottom': 0
-                        });
-                        var l = $('#loading');
-                        l.css({
-                            'left': wall.width()/2 - l.width()/2
-                        });
+                        $('#panel').centerHoriz().css({'bottom': 0});
+                        $('#loading').centerHoriz();
                         settings.fullscreen = true;
                         methods.draw(wall);
+                        if(map) {
+                            google.maps.event.trigger(map, "resize");
+                            $('#mapwrapper', wall).centerHoriz().centerVert();
+                        };
+
                     });
                     
                 }
@@ -1046,6 +1089,33 @@
             .delegate('#panel span.toggleclip', 'click', function(event) {
                 
                 $("#clipboard", wall).toggle('fast');
+                
+            })
+            .delegate('#panel span.togglemap', 'click', function(event) {
+                
+                $("#mapwrapper", wall).toggle('fast', function(event) {
+                    
+                    $("#mapwrapper").centerHoriz().centerVert();
+                    
+                    if(!map) {
+                        
+                        var mapstart = new google.maps.LatLng(settings.map_start_lat, settings.map_start_lng);
+                        var mapopts = {
+                            zoom: 3,
+                            center: mapstart,
+                            mapTypeId: google.maps.MapTypeId.TERRAIN
+                        };
+                        map = new google.maps.Map(document.getElementById("mapcanvas"), mapopts);
+                        
+                        for(var i=0; i<map_markers.length; i++) {
+                            var marker = map_markers[i];
+                            if(marker.map == null) {
+                                map_markers[i].setMap(map);  
+                            }
+                        }
+                    }
+                    
+                });
                 
             })
             .delegate('#panel span.submitsearch', 'click', function(event) {

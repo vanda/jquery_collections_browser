@@ -3,10 +3,11 @@
 <html>
     
     <head>
-        
 
         <link rel="stylesheet" type="text/css" href="http://media.vam.ac.uk/media/css/vam-css/reset.css" media="all" />
         <link rel="stylesheet" type="text/css" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/pepper-grinder/jquery-ui.css" media="all" />
+        
+        <script type="text/javascript" src="http://maps.googleapis.com/maps/api/js?sensor=false"></script>
         <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
         <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/jquery-ui.min.js"></script>
         
@@ -26,17 +27,21 @@
                     'start_size': 0,
                     'width': 960,
                     'height': 610,
-                    'search_term': 'war poster',
+                    'search_term': 'computer art',
                     'fill_direction': 'random',
                     'show_loading': true,
+                    'show_more_link': true,
                     'enable_history': true,
                     'enable_clipboard': true,
-                    'show_more_link': true
-                    });
+                    'enable_map': true,
+                    'map_start_lng': -0.172284,
+                    'map_start_lat': 51.496825,
+                    'api_stub': 'http://majorelle.int.vam.ac.uk/api/json/museumobject/'
+                });
             });
             
         </script>
-        
+
     </head>
     
     <body>
