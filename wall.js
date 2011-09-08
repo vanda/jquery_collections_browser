@@ -65,6 +65,9 @@
             'enable_clipboard': false,
             'enable_map': false,
             'max_history': 20, // maximum items in history
+            'hide_controls_on_load': false, // in this mode, the controls only appear in fullscreen mode
+            'logo': false, // the logo to display in the title panel
+            'image_counts_in_sidebar': false, 
                             
             // messaging
             'search_box_default': 'New search', // initial text in the search box
@@ -74,9 +77,11 @@
             'alert_msg_zoom_max': 'Sorry, cannot zoom in any further.',
             'alert_msg_zoom_min': 'Sorry, cannot zoom out any further.',
             'title_no_term': 'Showing 1000 selected images.', // what to display in the title bar if there is no search term
+            'loading_msg': 'Loading...',
             'tips': [
+                'Drag the grid or click the button in the corner to reveal more images and controls.',
                 'Try dragging the image grid to reveal more images.',
-                'You can change the size of the tiles using the zoom buttons in the panel below.',
+                'You can change the size of the images using the zoom buttons in the panel below.',
                 'You can shuffle the images using the button in the panel below.',
                 'Try switching to full screen and back using the toggle fullscreen button.',
                 'Click on an image to reveal the sidebar with more information about the object.',
@@ -84,8 +89,10 @@
                 'You can drag this window.',
                 'You can search for similar objects by clicking the object name in the sidebar.',
                 'The search returns a maximum of 1000 objects.',
-                'You can see the list of searches you\'ve done by clicking the toggle history button in the panel.'
+                'You can see the list of searches you\'ve done by clicking the toggle history button in the panel.',
+                'Click the map button in the panel to view the current set on a map.'
             ],
+            'start_tip': 0, // index of the tip that will be displayed on start
             
             // api stuff
             'api_stub': 'http://www.vam.ac.uk/api/json/museumobject/',
@@ -156,7 +163,7 @@
         
         var settings = $.extend({}, defaults, options); 
         
-        var cache = [], cache_full = false, fill_loop_id, cache_loop_id, ajax_in_progress = false, offset = 0, offset_anchor = 0, allow_shuffle = false, fullsize_dragged = false, old_parent, map=null, map_markers=[];
+        var cache = [], cache_full = false, fill_loop_id, cache_loop_id, ajax_in_progress = false, offset = 0, offset_anchor = 0, allow_shuffle = false, fullsize_dragged = false, old_parent, map=null, map_markers=[]; counter = 0;
 
         var fragments = {
          
@@ -166,11 +173,11 @@
                         '<li class="ui-state-default ui-corner-all"><span class="submitsearch ui-icon ui-icon-search" title="Submit search"></span></li>' +
                         '<li class="ui-state-default ui-corner-all"><span class="fullscreen ui-icon ui-icon-arrow-4-diag" title="Toggle full screen"></span></li>' +
                         '<li class="ui-state-default ui-corner-all"><span class="shuffle ui-icon ui-icon-shuffle" title="Shuffle images"></span></li>' +
-                        '<li class="ui-state-default ui-corner-all"><span class="zoomin ui-icon ui-icon-zoomin" title="Larger tiles"></span></li>' +
-                        '<li class="ui-state-default ui-corner-all"><span class="zoomout ui-icon ui-icon-zoomout" title="Smaller tiles"></span></li>' +
+                        '<li class="ui-state-default ui-corner-all"><span class="zoomin ui-icon ui-icon-zoomin" title="Larger images"></span></li>' +
+                        '<li class="ui-state-default ui-corner-all"><span class="zoomout ui-icon ui-icon-zoomout" title="Smaller images"></span></li>' +
                         '<li class="ui-state-default ui-corner-all hide"><span class="togglehist ui-icon ui-icon-clock" title="Toggle history panel"></span></li>' +
                         '<li class="ui-state-default ui-corner-all hide"><span class="toggleclip ui-icon ui-icon-clipboard" title="Toggle clipboard"></span></li>' +
-                        '<li class="ui-state-default ui-corner-all hide"><span class="togglemap ui-icon ui-icon-map" title="Map this set"></span></li>' +
+                        '<li class="ui-state-default ui-corner-all hide"><span class="togglemap ui-icon ui-icon-image" title="Map this set"></span></li>' +
                         '</ul>'  +
                         '</div>',
             
@@ -187,13 +194,15 @@
                         '</div>',
             
             loading:    '<div id="loading" class="ui-dialog ui-widget ui-widget-content ui-corner-all">' +
-                        '<div class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix"><span class="ui-dialog-title">Please wait...</span><a href="#" class="ui-dialog-titlebar-close ui-corner-all" role="button"><span class="ui-icon ui-icon-closethick">close</span></a></div>' +
+                        '<div class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix"><span class="ui-dialog-title"></span><a href="#" class="ui-dialog-titlebar-close ui-corner-all" role="button"><span class="ui-icon ui-icon-closethick">close</span></a></div>' +
+                        '<p><span style="float: left; margin-right: .3em;" class="ui-icon ui-icon-info"></span><strong>Tip:&nbsp;</strong><span class="tip"></span></p>' +
                         '<p class="results_info"></p>' +
                         '<div id="progressbar"></div>' +
                         '</div>',
             
             title:      '<div id="title" class="ui-dialog ui-widget ui-widget-content ui-corner-all">' +
-                        '<p class="title_info"></p>' +
+                        '<div class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix"><span class="ui-dialog-title"><p class="title_info"></p></span><a href="#" class="ui-dialog-titlebar-close ui-corner-all" role="button"><span class="ui-icon ui-icon-closethick">close</span></a></div>' +
+                        //~ '<p class="title_info"></p>' +
                         '</div>',
             
             fs:         '<div id="fullsize" class="ui-dialog ui-widget ui-widget-content ui-corner-all">' +
@@ -213,7 +222,9 @@
             
             disabled:   '<div id="disabled" class="ui-widget-overlay"></div>',
             
-            map:        '<div id="mapwrapper" class="ui-dialog"><div id="mapcanvas"></div></div>'
+            map:        '<div id="mapwrapper" class="ui-dialog"><div id="mapcanvas"></div></div>',
+            
+            fsbtn:      '<span id="fs_button" class="ui-state-default ui-corner-all fullscreen"><span class="fullscreen ui-icon ui-icon-arrow-4-diag" title="Toggle full screen"></span></span>'
             
         };
 
@@ -222,7 +233,7 @@
             showLoading: function() {
                 
                 var l = $('#loading', wall);
-                $("span.ui-dialog-title", l).html("Please wait...");
+                $("span.ui-dialog-title", l).html(settings.loading_msg);
                 l.centerHoriz().centerVert().show();
                 
             },
@@ -323,7 +334,11 @@
                                     var category_name = methods.ucfirst(cat.fields.name);
                                     if( cat.fields.museumobject_image_count > settings.min_category_count && category_name != 'Unknown') {
                                         lines++;
-                                        info_html += '<li class="size-'+parseInt(s, 10)+'"><a href="#" data-name="' + cat.model.split('.')[1] + '" data-pk="' + cat.pk + '" data-term="' + category_name + '" title="Browse images for \'' + category_name + '\'">' + category_name + '</a></li>';
+                                        info_html += '<li class="size-'+parseInt(s, 10)+'"><a href="#" data-name="' + cat.model.split('.')[1] + '" data-pk="' + cat.pk + '" data-term="' + category_name + '" title="Browse images for \'' + category_name + '\'">' + category_name + '</a>';
+                                        if(settings.image_counts_in_sidebar) {
+                                            info_html += '&nbsp;(' + cat.fields.museumobject_image_count + ')';
+                                        }
+                                        info_html += '</li>';
                                     }
                                 }
                                 if(settings.tag_style == 'list') info_html += '</ul>';
@@ -355,7 +370,7 @@
                 
             },
                     
-            apiStart: function(settings) {
+            apiStart: function() {
                 
                 ajax_in_progress = true;
                 $('#panel .shuffle').addClass('disabled');
@@ -379,7 +394,16 @@
                             
                         } else {
                         
-                            if(settings.show_loading) { methods.showLoading(); }
+                            if(settings.show_loading) { 
+                                var r;
+                                if(counter == 0) {
+                                    r = 0;
+                                } else {
+                                    r = Math.floor(Math.random()*settings.tips.length);
+                                }
+                                $('#loading .tip').html(settings.tips[r]);
+                                methods.showLoading(); 
+                            }
                         
                             if(typeof(cache_loop_id) != 'undefined') clearInterval(cache_loop_id);
                             if(typeof(fill_loop_id) != 'undefined') clearInterval(fill_loop_id);
@@ -420,6 +444,9 @@
                                 settings.browse_hist.shift();
                             }
                             $("#title .title_info", wall).html(title_text);
+                            if(counter > 0) {
+                                $("#title").show();
+                            }
                             
                             $("#progressbar").progressbar({ value: 0, max: settings.max_offset });
                             
@@ -444,7 +471,7 @@
                             ajax_in_progress = false;
                             cache_loop_id = setInterval(function() { methods.fillCache(settings, cache); }, settings.cache_interval);
                             fill_loop_id = setInterval(function() { methods.fillTiles(settings, cache); }, settings.fill_interval);
-                            
+                            counter++;
                         }
                         
                     }
@@ -801,7 +828,7 @@
                                     cache.push(cache_obj);
                                     offset ++;
                                     
-                                    if(settings.enable_map) {
+                                    if(settings.enable_map && cache_obj.lat && cache_obj.lng) {
                                         
                                         var point = new google.maps.LatLng(cache_obj.lat, cache_obj.lng);
                                         var marker = new google.maps.Marker({
@@ -810,10 +837,9 @@
                                         });
                                         map_markers.push(marker);
                                         if(map && !marker.map) {
-                                           marker.setMap(map); 
+                                            marker.setMap(map);
                                         }
-                                        
-                                    }
+                                    } 
                                     
                                 }
                                 if(offset >= settings.max_offset && cache.length < settings.max_offset) { offset = 0; }
@@ -832,9 +858,9 @@
                     cache_full = true;
                     setTimeout(methods.hideLoading, settings.hide_loader_time);
                     $("#loading .loaded").html(settings.display_results);
-                    var r = Math.floor(Math.random()*settings.tips.length);
+                    //~ var r = Math.floor(Math.random()*settings.tips.length);
                     $('#loading span.ui-dialog-title').html('Done.');
-                    $('#loading .results_info').html('<span style="float: left; margin-right: .3em;" class="ui-icon ui-icon-info"></span><strong>Tip:</strong> ' + settings.tips[r]);
+                    //~ $('#loading .tip').html('<span style="float: left; margin-right: .3em;" class="ui-icon ui-icon-info"></span><strong>Tip:</strong> ' + settings.tips[r]);
                 }
                 
             },
@@ -892,6 +918,10 @@
      
         settings.sidebar_width = settings.sidebar_image_size;
      
+        settings.browse_hist = [];
+        settings.cliplist = [];
+        settings.clipboard = [];
+     
         // write out an empty grid
         var grid_html = '<div id="grid">';
         for(var i=0; i < settings.start_rows; i++) {
@@ -928,10 +958,6 @@
         }
         $('#panel', this).centerHoriz().css({'bottom': 0});
         
-        settings.browse_hist = [];
-        settings.cliplist = [];
-        settings.clipboard = [];
-        
         if(settings.enable_history) {
             $('span.togglehist', '#panel').parent().removeClass('hide');
         }
@@ -940,6 +966,9 @@
         }
         if(settings.enable_map) {
             $('span.togglemap', '#panel').parent().removeClass('hide');
+        }
+        if(settings.hide_controls_on_load) {
+            $('#fs_button', this).show();
         }
         
         methods.apiStart(settings);
@@ -975,20 +1004,20 @@
         });
 
         this
-            .delegate('#icons li span', 'mouseover', function(event) {
+            .delegate('.ui-icon', 'mouseover', function(event) {
                 $(this).parent().addClass('ui-state-hover');
             })
-            .delegate('#icons li span', 'mouseout', function(event) {
+            .delegate('.ui-icon', 'mouseout', function(event) {
                 $(this).parent().removeClass('ui-state-hover');
             })
-            .delegate('#panel span.fullscreen', 'click', function(event) {
+            .delegate('.fullscreen', 'click', function(event) {
+                event.stopImmediatePropagation()
                 event.preventDefault();
-                
                 var sidebar = $("#sidebar", wall);
-                
                 if (settings.fullscreen) {
                     // shrink
                     $("body").css({'overflow': 'auto'});
+                    console.log(2, old_parent);
                     wall.prependTo(old_parent)
                         .animate({
                         'width': settings.width,
@@ -1049,6 +1078,13 @@
                             $('#mapwrapper', wall).centerHoriz().centerVert();
                         };
 
+                        if(!$('#panel').is(':visible')) {
+                            $('#panel').show();
+                        }
+                        if(!$('#title').is(':visible')) {
+                            $('#title').show();
+                        }
+
                     });
                     
                 }
@@ -1095,7 +1131,7 @@
                 
                 $("#mapwrapper", wall).toggle('fast', function(event) {
                     
-                    $("#mapwrapper").centerHoriz().centerVert();
+                    $(this).centerHoriz().centerVert();
                     
                     if(!map) {
                         
@@ -1111,6 +1147,7 @@
                             var marker = map_markers[i];
                             if(marker.map == null) {
                                 map_markers[i].setMap(map);  
+                                
                             }
                         }
                     }
