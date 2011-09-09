@@ -60,6 +60,7 @@
             'fill_direction': 'random', // what order to fill blank tile - values are 'forwards', 'backwards' or 'random'
             'tag_style': 'list', // how to display the tags - values are 'tagcloud', or 'list'
             'show_loading': false, // whether to display the loading dialog
+            'show_loading_numbers': false, // whether to display the loading progress count
             'show_more_link': false, // whether to display the link to the item details page in the sidebar
             'enable_history': false, 
             'enable_clipboard': false,
@@ -79,7 +80,7 @@
             'title_no_term': 'Showing 1000 selected images.', // what to display in the title bar if there is no search term
             'loading_msg': 'Loading...',
             'tips': [
-                'Drag the grid or click the button in the corner to reveal more images and controls.',
+                'Drag the grid or click the button in the corner to reveal more images.',
                 'Try dragging the image grid to reveal more images.',
                 'You can change the size of the images using the zoom buttons in the panel below.',
                 'You can shuffle the images using the button in the panel below.',
@@ -105,13 +106,15 @@
                 'name': '',
                 'term': ''
             },
-            'max_results': 1000, // the max results we can handle
+            'max_results': 250, // the max results we can handle
             'limit': 50, // how many images to get per api request. Also affects the size of progressbar increments
             'search_term': '', // term to search the api for
             'category-stub': '', // category to retrieve images from 
             'sidebar_image_suffix': '_jpg_w',
             'large_image_suffix': '_jpg_l',
-                        
+            'map_start_lat': 51.49645,
+            'map_start_lng': -0.17197,
+                                    
             // html fragments
             'blank_tile': '<li class="blank"></li>',
             
@@ -163,7 +166,7 @@
         
         var settings = $.extend({}, defaults, options); 
         
-        var cache = [], cache_full = false, fill_loop_id, cache_loop_id, ajax_in_progress = false, offset = 0, offset_anchor = 0, allow_shuffle = false, fullsize_dragged = false, old_parent, map=null, map_markers=[]; counter = 0;
+        var cache = [], cache_full = false, fill_loop_id, cache_loop_id, ajax_in_progress = false, offset = 0, offset_anchor = 0, allow_shuffle = false, fullsize_dragged = false, old_parent, map=null, map_center, map_markers=[]; counter = 0;
 
         var fragments = {
          
@@ -196,7 +199,7 @@
             loading:    '<div id="loading" class="ui-dialog ui-widget ui-widget-content ui-corner-all">' +
                         '<div class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix"><span class="ui-dialog-title"></span><a href="#" class="ui-dialog-titlebar-close ui-corner-all" role="button"><span class="ui-icon ui-icon-closethick">close</span></a></div>' +
                         '<p><span style="float: left; margin-right: .3em;" class="ui-icon ui-icon-info"></span><strong>Tip:&nbsp;</strong><span class="tip"></span></p>' +
-                        '<p class="results_info"></p>' +
+                        '<p class="results_info hide"></p>' +
                         '<div id="progressbar"></div>' +
                         '</div>',
             
@@ -828,12 +831,18 @@
                                     cache.push(cache_obj);
                                     offset ++;
                                     
-                                    if(settings.enable_map && cache_obj.lat && cache_obj.lng) {
+                                    if(settings.enable_map && map && cache_obj.lat && cache_obj.lng) {
                                         
+                                        var object_icon_url = settings.images_url + cache_obj.imref.substr(0, 6) + "/" + cache_obj.imref + "_jpg_s.jpg";
                                         var point = new google.maps.LatLng(cache_obj.lat, cache_obj.lng);
                                         var marker = new google.maps.Marker({
                                             position: point,
-                                            title: cache_obj.title
+                                            title: cache_obj.title,
+                                            //~ icon: object_icon_url,
+                                            objnum: cache_obj.num
+                                        });
+                                        google.maps.event.addListener(marker, 'click', function(event) {
+                                            methods.populateSidebar(wall, this.objnum);
                                         });
                                         map_markers.push(marker);
                                         if(map && !marker.map) {
@@ -858,9 +867,7 @@
                     cache_full = true;
                     setTimeout(methods.hideLoading, settings.hide_loader_time);
                     $("#loading .loaded").html(settings.display_results);
-                    //~ var r = Math.floor(Math.random()*settings.tips.length);
                     $('#loading span.ui-dialog-title').html('Done.');
-                    //~ $('#loading .tip').html('<span style="float: left; margin-right: .3em;" class="ui-icon ui-icon-info"></span><strong>Tip:</strong> ' + settings.tips[r]);
                 }
                 
             },
@@ -872,11 +879,11 @@
             fillTile: function(tile, item) {
                 
                 if(tile && typeof(tile) != 'undefined') {
-                    tile
-                        .css({ 'background-image': 'url('+methods.getImageUrl(settings.images_url, item.imref)+')'})
-                        .attr('title', item.title + ' [' + item.num + ']')
-                        .data('objnum', item.num)
-                        .removeClass('blank');
+                    
+                    tile.css({ 'background-image': 'url('+methods.getImageUrl(settings.images_url, item.imref)+')'})
+                    tile.attr('title', item.title + ' [' + item.num + ']')
+                    tile.data('objnum', item.num)
+                    tile.removeClass('blank');
                 }
             },
             
@@ -965,10 +972,26 @@
             $('span.toggleclip', '#panel').parent().removeClass('hide');
         }
         if(settings.enable_map) {
+            map_center = new google.maps.LatLng(settings.map_start_lat, settings.map_start_lng);
+            var mapopts = {
+                zoom: 3,
+                center: map_center,
+                mapTypeId: google.maps.MapTypeId.TERRAIN
+            };
+            map = new google.maps.Map(document.getElementById("mapcanvas"), mapopts);
+            for(var i=0; i<map_markers.length; i++) {
+                var marker = map_markers[i];
+                if(marker.map == null) {
+                    map_markers[i].setMap(map);  
+                }
+            }
             $('span.togglemap', '#panel').parent().removeClass('hide');
         }
         if(settings.hide_controls_on_load) {
             $('#fs_button', this).show();
+        }
+        if(settings.show_loading_numbers) {
+            $('#loading p.results_info', wall).show();
         }
         
         methods.apiStart(settings);
@@ -1017,7 +1040,6 @@
                 if (settings.fullscreen) {
                     // shrink
                     $("body").css({'overflow': 'auto'});
-                    console.log(2, old_parent);
                     wall.prependTo(old_parent)
                         .animate({
                         'width': settings.width,
@@ -1131,25 +1153,11 @@
                 
                 $("#mapwrapper", wall).toggle('fast', function(event) {
                     
-                    $(this).centerHoriz().centerVert();
-                    
-                    if(!map) {
-                        
-                        var mapstart = new google.maps.LatLng(settings.map_start_lat, settings.map_start_lng);
-                        var mapopts = {
-                            zoom: 3,
-                            center: mapstart,
-                            mapTypeId: google.maps.MapTypeId.TERRAIN
-                        };
-                        map = new google.maps.Map(document.getElementById("mapcanvas"), mapopts);
-                        
-                        for(var i=0; i<map_markers.length; i++) {
-                            var marker = map_markers[i];
-                            if(marker.map == null) {
-                                map_markers[i].setMap(map);  
-                                
-                            }
-                        }
+                    var t = $(this);
+                    t.centerHoriz().centerVert();
+                    if(t.is(':visible')) {
+                        google.maps.event.trigger(map, "resize");
+                        map.setCenter(map_center);
                     }
                     
                 });
