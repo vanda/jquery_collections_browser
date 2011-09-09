@@ -166,7 +166,10 @@
         
         var settings = $.extend({}, defaults, options); 
         
-        var cache = [], cache_full = false, fill_loop_id, cache_loop_id, ajax_in_progress = false, offset = 0, offset_anchor = 0, allow_shuffle = false, fullsize_dragged = false, old_parent, map=null, map_center, map_markers=[]; counter = 0;
+        var cache = [], cache_full = false, fill_loop_id, cache_loop_id, 
+            ajax_in_progress = false, offset = 0, offset_anchor = 0, allow_shuffle = false, 
+            fullsize_dragged = false, old_parent, map=null, map_center, 
+            map_markers=[], counter = 0, S = {};
 
         var fragments = {
          
@@ -415,28 +418,28 @@
                             $("#grid ul li", wall).addClass('blank');
                         
                             // from the result count set the grid size
-                            settings.num_results = (json.meta.result_count > settings.max_results) ? settings.max_results : json.meta.result_count;
-                            settings.display_results = parseInt(settings.num_results, 10);
-                            settings.grid_width = Math.floor(Math.sqrt(settings.num_results));
-                            settings.grid_height = settings.grid_width;
-                            settings.max_offset = settings.grid_width * settings.grid_height;
+                            S.num_results = (json.meta.result_count > settings.max_results) ? settings.max_results : json.meta.result_count;
+                            S.display_results = parseInt(settings.num_results, 10);
+                            S.grid_width = Math.floor(Math.sqrt(S.num_results));
+                            S.grid_height = S.grid_width;
+                            S.max_offset = S.grid_width * S.grid_height;
                             
                             // populate title bar and history
                             var in_hist = false, title_text;
-                            if(settings.category.id !== null) {
-                                title_text = 'Showing ' + settings.num_results + ' images for <span class="">' + methods.ucfirst(settings.category.name) + ': '+ methods.ucfirst(settings.category.term) + '</span>';
-                                var cat_token = settings.category.id + settings.category.name + settings.category.term;
+                            if(S.category.id !== null) {
+                                title_text = 'Showing ' + S.num_results + ' images for <span class="">' + methods.ucfirst(S.category.name) + ': '+ methods.ucfirst(S.category.term) + '</span>';
+                                var cat_token = S.category.id + S.category.name + S.category.term;
                                 cat_token = cat_token.replace(/ /gi, '').toLowerCase();
                                 if($.inArray(cat_token, settings.browse_hist) == -1) {
                                     settings.browse_hist.push(cat_token);
-                                    $("#histlist ul").append('<li><a href="#" data-name="' + settings.category.name + '" data-pk="' + settings.category.id + '" data-term="' + settings.category.term + '">' + methods.ucfirst(settings.category.name) + ': ' + settings.category.term + '</a></li>');
+                                    $("#histlist ul").append('<li><a href="#" data-name="' + S.category.name + '" data-pk="' + S.category.id + '" data-term="' + S.category.term + '">' + methods.ucfirst(S.category.name) + ': ' + S.category.term + '</a></li>');
                                 }
                                 $("#histlist").show();
-                            } else if(settings.search_term !== '') {
-                                title_text = 'Showing ' + settings.num_results + ' images for <span class="">' + settings.search_term + '</span>';
-                                if($.inArray(settings.search_term, settings.browse_hist) == -1) {
-                                    $("#histlist ul").append('<li><a href="#" data-search_term="'+settings.search_term+'" title="Search for \'' + settings.search_term + '\'">Search: '+settings.search_term+'</a></li>');
-                                    settings.browse_hist.push(settings.search_term);
+                            } else if(S.search_term !== '') {
+                                title_text = 'Showing ' + S.num_results + ' images for <span class="">' + S.search_term + '</span>';
+                                if($.inArray(S.search_term, settings.browse_hist) == -1) {
+                                    $("#histlist ul").append('<li><a href="#" data-search_term="'+S.search_term+'" title="Search for \'' + S.search_term + '\'">Search: '+S.search_term+'</a></li>');
+                                    settings.browse_hist.push(S.search_term);
                                 }
                                 $("#histlist").show();
                             } else {
@@ -451,10 +454,10 @@
                                 $("#title").show();
                             }
                             
-                            $("#progressbar").progressbar({ value: 0, max: settings.max_offset });
+                            $("#progressbar").progressbar({ value: 0, max: S.max_offset });
                             
                             // populate control panel
-                            $('#loading p.results_info', wall).html('Loading <strong><span class="loaded">0</span>/' + settings.display_results + '</strong> images');
+                            $('#loading p.results_info', wall).html('Loading <strong><span class="loaded">0</span>/' + S.display_results + '</strong> images');
                             
                             // add offset attributes
                             offset_anchor = 0;
@@ -465,7 +468,7 @@
                                 if(count==num_cols) {
                                     count = 0;
                                     row++;
-                                    o = row * settings.grid_width;
+                                    o = row * S.grid_width;
                                 } else {
                                     o++;
                                 }
@@ -482,20 +485,20 @@
                 return true;
             },
                     
-            resize: function(wall) {
+            resize: function(size) {
                 
-                var d = settings.sizes[settings.current_size];
-                settings.tile_w = d.dim;
-                settings.tile_h = d.dim;
-                settings.cell_w = settings.tile_w + settings.tile_margin + 2; // the '2' accounts for borders
-                settings.cell_h = settings.tile_h + settings.tile_margin + 2; 
-                settings.start_rows = Math.ceil(settings.height / settings.cell_h);
-                settings.start_cols = Math.ceil(settings.width / settings.cell_w);
-                settings.tile_sidebar_image_suffix = d.suff;
+                methods.prepareSession(size)
+                
+                //~ var d = settings.sizes[S.current_size];
+                //~ S.tile_w = d.dim;
+                //~ S.tile_h = d.dim;
+                //~ S.cell_w = S.tile_w + settings.tile_margin + 2; // the '2' accounts for borders
+                //~ S.cell_h = S.tile_h + settings.tile_margin + 2; 
+                //~ S.start_rows = Math.ceil(settings.height / S.cell_h);
+                //~ S.start_cols = Math.ceil(settings.width / S.cell_w);
+                //~ S.tile_sidebar_image_suffix = d.suff;
                 
                 $('#grid', wall).html('');
-                $('#panel a.resize').removeClass('selected');
-                $(this).addClass('selected');
                 methods.draw(wall);
                 // add offset attributes
                 offset_anchor = 0;
@@ -507,13 +510,25 @@
                     if(count==num_cols) {
                         count = 0;
                         row++;
-                        o = row * settings.grid_width;
+                        o = row * S.grid_width;
                     } else {
                         o++;
                     }
                     
                 }
                         
+            },
+              
+            prepareSession: function(size) {
+                
+                S.tile_w = settings.sizes[size].dim;
+                S.tile_h = settings.sizes[size].dim;
+                S.tile_sidebar_image_suffix = settings.sizes[size].suff;
+                S.cell_w = S.tile_w + settings.tile_margin + 2; // the '2' accounts for borders
+                S.cell_h = S.tile_h + settings.tile_margin + 2; 
+                S.start_rows = Math.ceil(settings.height / S.cell_h);
+                S.start_cols = Math.ceil(settings.width / S.cell_w);
+                
             },
                     
             buildUrl: function(offset, limit) {
@@ -527,18 +542,15 @@
                 }
                 
                 var url, display_term;
-                if(settings.category.id !== null) {
-                    
+                if(S.category.id !== null) {
                     url = settings.api_stub;
-                    url += '?' + settings.category.name + '=' + settings.category.id;
-                    url += '&getgroup=' + settings.category.name;
-                    display_term = methods.ucfirst(settings.category.term);
-                    
+                    url += '?' + S.category.name + '=' + S.category.id;
+                    url += '&getgroup=' + S.category.name;
+                    display_term = methods.ucfirst(S.category.term);
                 } else {
                     url = settings.api_stub + settings.api_search_path;
-                    url += "?q=" + settings.search_term;
-                    display_term = methods.ucfirst(settings.search_term);
-                    
+                    url += "?q=" + S.search_term;
+                    display_term = methods.ucfirst(S.search_term);
                 }
                 url += '&limit=' + limit;
                 url += '&offset=' + offset;
@@ -559,8 +571,8 @@
             styleTiles: function(wall) {
              
                 $('#grid li', wall).css({
-                    'width': settings.tile_w,
-                    'height': settings.tile_h,
+                    'width': S.tile_w,
+                    'height': S.tile_h,
                     'margin-right': settings.tile_margin,
                     'margin-bottom': settings.tile_margin,
                     'border-color': settings.tile_border_color
@@ -596,10 +608,10 @@
                 
                 grid.width(grid.width() + wall.position().left + wall.width());
                 var tiles = {
-                    'N': Math.ceil(grid.position().top / settings.cell_h),
-                    'S': Math.ceil((wall.height() - grid.position().top + grid.height()) / settings.cell_h),
-                    'E': Math.ceil((grid.position().left + grid.width()) / settings.cell_w),
-                    'W': Math.ceil(grid.position().left / settings.cell_w)
+                    'N': Math.ceil(grid.position().top / S.cell_h),
+                    'S': Math.ceil((wall.height() - grid.position().top + grid.height()) / S.cell_h),
+                    'E': Math.ceil((grid.position().left + grid.width()) / S.cell_w),
+                    'W': Math.ceil(grid.position().left / S.cell_w)
                 };
                 var p;
                 for(p in tiles) { tiles[p] = tiles[p] < 0 ? 0 : tiles[p]; }
@@ -644,9 +656,9 @@
                 
                 // reposition and resize the grid AFTER adding new tiles
                 grid.css({
-                    'top': tiles.N > 0 ? grid.position().top - tiles.N * settings.cell_h  : grid.position().top,
-                    'left': tiles.W > 0 ? grid.position().left - tiles.W * settings.cell_w : grid.position().left,
-                    'width': $("#grid ul:first > li", wall).length * settings.cell_w
+                    'top': tiles.N > 0 ? grid.position().top - tiles.N * S.cell_h  : grid.position().top,
+                    'left': tiles.W > 0 ? grid.position().left - tiles.W * S.cell_w : grid.position().left,
+                    'width': $("#grid ul:first > li", wall).length * S.cell_w
                 });
                 
                 // make sure all the new tiles are styled up
@@ -654,10 +666,10 @@
                 
                 // find tiles outside the viewport and remove them
                 var remove = {
-                    'N': Math.floor(grid.position().top * -1 / settings.cell_h),
-                    'S': Math.floor( (grid.height() - wall.height() + grid.position().top) / settings.cell_h),
-                    'E': Math.floor((grid.width() - wall.width() + grid.position().left) / settings.cell_w),
-                    'W': Math.floor(grid.position().left * -1 / settings.cell_w)
+                    'N': Math.floor(grid.position().top * -1 / S.cell_h),
+                    'S': Math.floor( (grid.height() - wall.height() + grid.position().top) / S.cell_h),
+                    'E': Math.floor((grid.width() - wall.width() + grid.position().left) / S.cell_w),
+                    'W': Math.floor(grid.position().left * -1 / S.cell_w)
                 };
                 
                 for(p in remove) { remove[p] = remove[p] < 0 ? 0 : remove[p]; }
@@ -666,7 +678,7 @@
                 while(tiles_removed < remove.W) {
                     $("#grid ul li:first-child").remove();
                     tiles_removed ++;
-                    grid.css({'left': grid.position().left + settings.cell_w});
+                    grid.css({'left': grid.position().left + S.cell_w});
                 }
                 tiles_removed = 0;
                 while(tiles_removed < remove.E) {
@@ -676,7 +688,7 @@
                 while(rows_removed < remove.N) {
                     $("#grid ul:first-child").remove();
                     rows_removed ++;
-                    grid.css({'top': grid.position().top + settings.cell_h});
+                    grid.css({'top': grid.position().top + S.cell_h});
                 }
                 rows_removed = 0;
                 while(rows_removed < remove.S) {
@@ -684,7 +696,7 @@
                     rows_removed ++;
                 }
                             
-                grid.width($("#grid ul:first > li", wall).length * settings.cell_w);
+                grid.width($("#grid ul:first > li", wall).length * S.cell_w);
                             
                 if(do_offsets) {
                     methods.updateOffsets(wall, tiles, remove, settings);
@@ -696,22 +708,22 @@
                 offset_anchor = parseInt(offset_anchor, 10);
                 
                 if(tiles.N > 0) {
-                    offset_anchor -= settings.grid_width * tiles.N;
+                    offset_anchor -= S.grid_width * tiles.N;
                     if(offset_anchor < 0) {
-                        offset_anchor += settings.max_offset;
+                        offset_anchor += S.max_offset;
                     }
                 }
                 
                 var min, max;
                 if(tiles.W > 0) {
-                    min = Math.floor(offset_anchor/settings.grid_width) * settings.grid_width;
-                    max = min + settings.grid_width -1;
+                    min = Math.floor(offset_anchor/S.grid_width) * S.grid_width;
+                    max = min + S.grid_width -1;
                     offset_anchor -= tiles.W;
-                    if(offset_anchor < min) { offset_anchor += settings.grid_width; }
+                    if(offset_anchor < min) { offset_anchor += S.grid_width; }
                 }
                 
                 offset_anchor += remove.W;
-                offset_anchor -= remove.N * settings.grid_width;
+                offset_anchor -= remove.N * S.grid_width;
                 
                 // TODO: fix this:
                 if(offset_anchor < 0) offset_anchor = 0;
@@ -722,15 +734,15 @@
                 
                 for(var j=0;j<rows.size();j++) {
                  
-                    var o = offset_anchor + (j * settings.grid_width);
-                    if(o>=settings.max_offset) {
-                        o -= settings.max_offset;
+                    var o = offset_anchor + (j * S.grid_width);
+                    if(o>=S.max_offset) {
+                        o -= S.max_offset;
                     }
                  
                     tiles = $("li", rows[j]);
                     
-                    min = Math.floor(o/settings.grid_width) * settings.grid_width;
-                    max = min + settings.grid_width -1;
+                    min = Math.floor(o/S.grid_width) * S.grid_width;
+                    max = min + S.grid_width -1;
                  
                     for(var i=0;i<tiles.size();i++) {
                         
@@ -743,8 +755,8 @@
                     }
                     
                     o = max + 1;
-                    if(o >= settings.max_offset-1) {
-                        o -= settings.max_offset;
+                    if(o >= S.max_offset-1) {
+                        o -= S.max_offset;
                     }
                     
                 }
@@ -755,7 +767,7 @@
                 
                 var u;
                 try {
-                    u = url_base + image_ref.substr(0, 6) + "/" + image_ref + settings.tile_sidebar_image_suffix + ".jpg";
+                    u = url_base + image_ref.substr(0, 6) + "/" + image_ref + S.tile_sidebar_image_suffix + ".jpg";
                 } catch(err) {
                     u = "";
                 }
@@ -801,7 +813,7 @@
                     offset = 0;
                 }
                 
-                if(cache.length < settings.max_offset) {
+                if(cache.length < S.max_offset) {
                 
                     cache_full = false;
                 
@@ -851,7 +863,7 @@
                                     } 
                                     
                                 }
-                                if(offset >= settings.max_offset && cache.length < settings.max_offset) { offset = 0; }
+                                if(offset >= S.max_offset && cache.length < S.max_offset) { offset = 0; }
                                 ajax_in_progress = false;
                                 $("#progressbar").progressbar({ value: cache.length });
                                 $("#loading .loaded").html(cache.length);
@@ -866,7 +878,7 @@
                     clearInterval(cache_loop_id);
                     cache_full = true;
                     setTimeout(methods.hideLoading, settings.hide_loader_time);
-                    $("#loading .loaded").html(settings.display_results);
+                    $("#loading .loaded").html(S.display_results);
                     $('#loading span.ui-dialog-title').html('Done.');
                 }
                 
@@ -913,16 +925,13 @@
             }
                 
         };
+        
+        S.category = settings.category;
+        S.search_term = settings.search_term;
+        
+        S.current_size = settings.start_size;
+        methods.prepareSession(S.current_size);
 
-        settings.current_size = settings.start_size;
-        settings.tile_w = settings.sizes[settings.current_size].dim;
-        settings.tile_h = settings.sizes[settings.current_size].dim;
-        settings.tile_sidebar_image_suffix = settings.sizes[settings.current_size].suff;
-        settings.cell_w = settings.tile_w + settings.tile_margin + 2; // the '2' accounts for borders
-        settings.cell_h = settings.tile_h + settings.tile_margin + 2; 
-        settings.start_rows = Math.ceil(settings.height / settings.cell_h);
-        settings.start_cols = Math.ceil(settings.width / settings.cell_w);
-     
         settings.sidebar_width = settings.sidebar_image_size;
      
         settings.browse_hist = [];
@@ -931,8 +940,8 @@
      
         // write out an empty grid
         var grid_html = '<div id="grid">';
-        for(var i=0; i < settings.start_rows; i++) {
-            grid_html += methods.drawEmptyRow(settings.start_cols);
+        for(var i=0; i < S.start_rows; i++) {
+            grid_html += methods.drawEmptyRow(S.start_cols);
         }
         grid_html += '</div>';
         this.html(grid_html);
@@ -954,7 +963,7 @@
             'border': settings.wall_border
         });
         grid.css({
-            'width': settings.cell_w * settings.start_cols
+            'width': S.cell_w * S.start_cols
         });
         methods.styleTiles();
 
@@ -1027,6 +1036,9 @@
         });
 
         this
+            .delegate('*', 'click', function(event) {
+                console.log(S);
+            })
             .delegate('.ui-icon', 'mouseover', function(event) {
                 $(this).parent().addClass('ui-state-hover');
             })
@@ -1117,9 +1129,9 @@
                 event.preventDefault();
                 
                 var max_size = settings.sizes.length-1;
-                if(settings.current_size < max_size) {
-                    settings.current_size++;
-                    methods.resize(wall);
+                if(S.current_size < max_size) {
+                    S.current_size++;
+                    methods.resize(S.current_size);
                     
                 } else {
                     methods.showDialog(wall, settings.alert_msg_zoom_max);
@@ -1128,10 +1140,10 @@
             })
             .delegate('#panel span.zoomout', 'click', function(event) {
                 
-                if(settings.current_size > 0) {
+                if(S.current_size > 0) {
                 
-                    settings.current_size--;
-                    methods.resize(wall);
+                    S.current_size--;
+                    methods.resize(S.current_size);
                    
                     
                 } else {
@@ -1168,12 +1180,12 @@
                 var s = $('#panel input[name="search"]', wall).val();
                 if(s!=='' && s != settings.search_box_default) {
                     
-                    settings.category = {
+                    S.category = {
                         'id': null,
                         'name': '',
                         'term': ''
                     };
-                    settings.search_term = s;
+                    S.search_term = s;
                     methods.apiStart(settings);
                     
                     
@@ -1192,12 +1204,12 @@
                     
                     if(s!=='' && s != settings.search_box_default) {
                         
-                        settings.category = {
+                        S.category = {
                             'id': null,
                             'name': '',
                             'term': ''
                         };
-                        settings.search_term = s;
+                        S.search_term = s;
                         methods.apiStart(settings);
 
                     } else {
@@ -1222,14 +1234,14 @@
                 
                 event.preventDefault();
                 if($(this).data('search_term')) {
-                    settings.category = {
+                    S.category = {
                         'id': null,
                         'name': '',
                         'term': ''
                     };
-                    settings.search_term = $(this).data('search_term');
+                    S.search_term = $(this).data('search_term');
                 } else {
-                    settings.category = {
+                    S.category = {
                         'id': $(this).data('pk'),
                         'name': $(this).data('name'),
                         'term': $(this).data('term')
@@ -1244,12 +1256,12 @@
                 $('#panel input[name="search"]', wall).val(s);
                 if(s!=='' && s != settings.search_box_default) {
                     
-                    settings.category = {
+                    S.category = {
                         'id': null,
                         'name': '',
                         'term': ''
                     };
-                    settings.search_term = s;
+                    S.search_term = s;
                     methods.apiStart(settings);
 
                 } else {
@@ -1262,7 +1274,7 @@
                 if(allow_shuffle) {
                 
                     var keys = [], shuffle = [], tiles = $('#grid li', wall), count = 0;
-                    for(var d=0; d<settings.max_offset; d++) { shuffle[Math.random() * 1] = d; }
+                    for(var d=0; d<S.max_offset; d++) { shuffle[Math.random() * 1] = d; }
                     for(var r in shuffle) { keys.push(r); }
                     keys.sort();
                     for(var k in keys) {
@@ -1317,12 +1329,13 @@
                
                 event.preventDefault();
                 
-                settings.category = {
+                S.category = {
                     'id': $(this).data('pk'),
                     'name': $(this).data('name'),
                     'term': $(this).data('term')
                 };
-                methods.apiStart(settings);
+                console.log(S.category);
+                methods.apiStart();
                 $('#panel input[name="search"]', wall).val('New search');
         
             })
