@@ -187,7 +187,7 @@
                         '</ul>'  +
                         '</div>',
             
-            sidebar:    '<div id="sidebar"  class="ui-dialog ui-widget ui-widget-content ui-corner-all">' +
+            sidebar:    '<div id="sidebar" class="ui-dialog ui-widget ui-widget-content ui-corner-all">' +
                         '<div class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix"><span class="ui-dialog-title object-title"></span><a href="#" class="ui-dialog-titlebar-close ui-corner-all" role="button"><span class="ui-icon ui-icon-closethick">close</span></a></div>' +
                         '<div class="sidebar_image"></div>' +
                         '<div class="sidebar_info"></div>' +
@@ -456,7 +456,6 @@
                             
                             $("#progressbar").progressbar({ value: 0, max: S.max_offset });
                             
-                            // populate control panel
                             $('#loading p.results_info', wall).html('Loading <strong><span class="loaded">0</span>/' + S.display_results + '</strong> images');
                             
                             // add offset attributes
@@ -980,7 +979,7 @@
         if(settings.enable_clipboard) {
             $('span.toggleclip', '#panel').parent().removeClass('hide');
         }
-        if(settings.enable_map) {
+        if(settings.enable_map && typeof(google) != 'undefined') {
             map_center = new google.maps.LatLng(settings.map_start_lat, settings.map_start_lng);
             var mapopts = {
                 zoom: 3,
@@ -998,6 +997,8 @@
         }
         if(settings.hide_controls_on_load) {
             $('#fs_button', this).show();
+        } else {
+            $('#panel', this).show();
         }
         if(settings.show_loading_numbers) {
             $('#loading p.results_info', wall).show();
@@ -1036,9 +1037,6 @@
         });
 
         this
-            .delegate('*', 'click', function(event) {
-                console.log(S);
-            })
             .delegate('.ui-icon', 'mouseover', function(event) {
                 $(this).parent().addClass('ui-state-hover');
             })
@@ -1334,7 +1332,6 @@
                     'name': $(this).data('name'),
                     'term': $(this).data('term')
                 };
-                console.log(S.category);
                 methods.apiStart();
                 $('#panel input[name="search"]', wall).val('New search');
         
