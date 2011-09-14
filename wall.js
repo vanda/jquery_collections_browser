@@ -303,10 +303,8 @@
                         var musobj = json[0].fields;
                         var image_url = settings.images_url + musobj.primary_image_id.substr(0, 6) + "/" + musobj.primary_image_id + settings.sidebar_image_suffix + ".jpg";
                         var objname = musobj.object;
-                        //~ var objtitle = '<span id="objname" class="searchable" title="Search for \'' + musobj.object +'\'">' + musobj.object + '</span>';
                         if(musobj.title) {
                             objname += ': ' + musobj.title;
-                            //~ objtitle += ': ' + musobj.title;
                         }
                         
                         var sidebar_image    =  '<img src="' + image_url + '" title="' + objname + '" alt="' + objname + '" width="'+ settings.sidebar_image_size +'" height="'+ settings.sidebar_image_size +'" data-objnum="' + musobj.object_number + '">';
@@ -314,7 +312,6 @@
 
                         var info_html = '';
                         if(settings.show_more_link) {
-                            //~ info_html = '<div class="ui-widget ui-state-highlight ui-corner-all"><div><span class="ui-icon ui-icon-extlink" style="float:left;"></span><a href="' + settings.collections_record_url + musobj.object_number + '">More details</a></div>';
                             if(settings.enable_clipboard) {
                                 info_html += '<div><span class="ui-icon ui-icon-copy" style="float:left;"></span><a data-name="' + objname + '" data-objnum="' + musobj.object_number + '" data-imref="' + musobj.primary_image_id + '" class="save" href="#" title="Save this object to your clipboard">Save</a></div></div>';
                             }
@@ -380,7 +377,8 @@
                         $(".sidebar_info", sidebar).html(info_html);
                         $("button", sidebar).data('href', settings.collections_record_url + musobj.object_number);
                         if(S.fullscreen) {
-                            $(".sidebar_info", sidebar).height(sidebar.height() - $(".sidebar_image").outerHeight() - $(".ui-dialog-titlebar", sidebar).outerHeight()).scrollTop(0);
+                            var h = sidebar.height() - $(".sidebar_image").outerHeight() - $(".ui-dialog-titlebar", sidebar).outerHeight();
+                            $(".sidebar_info", sidebar).css({'min-height':h}).scrollTop(0);
                         } else {
                             $(".sidebar_info", sidebar).height(settings.sidebar_image_size);
                             var tombstring = objname;
@@ -513,16 +511,6 @@
             resize: function(size) {
                 
                 methods.prepareSession(size)
-                
-                //~ var d = settings.sizes[S.current_size];
-                //~ S.tile_w = d.dim;
-                //~ S.tile_h = d.dim;
-                //~ S.cell_w = S.tile_w + settings.tile_margin + 2; // the '2' accounts for borders
-                //~ S.cell_h = S.tile_h + settings.tile_margin + 2; 
-                //~ S.start_rows = Math.ceil(settings.height / S.cell_h);
-                //~ S.start_cols = Math.ceil(settings.width / S.cell_w);
-                //~ S.tile_sidebar_image_suffix = d.suff;
-                
                 $('#grid', wall).html('');
                 methods.draw(wall);
                 // add offset attributes
@@ -1249,7 +1237,8 @@
                 
             })
             .delegate('.searchable', 'click', function(event) {
-               
+                
+                $('#sidebar', wall).hide();
                 var s = $(this).html();
                 $('#panel input[name="search"]', wall).val(s);
                 if(s!=='' && s != settings.search_box_default) {
