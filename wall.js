@@ -48,6 +48,10 @@
             'start_size': 2,
             'tile_margin': 8, // margin around each tile
             'sidebar_image_size': 265, // size of the image in the sidebar panel
+            'minimized_sidebar': {
+                'width': '550px',
+                'height': '360px'
+            },
             'background_color': '#ffffff', // background colour of the whole wall
             'tile_border_color': '#a1a1a1', // colour of tile borders
             'img_fadein': 500, // how long each image should take to fade in (ms)
@@ -147,6 +151,9 @@
                 ['History note', 'history_note']
             ],
             
+            // fields to include in the footer text of the info window
+            'tombstone_string': ['artist', 'date_text', 'museum_number'],
+            
             'event_click_sidebar_img': function(event) { 
                 
                 event.preventDefault();
@@ -189,8 +196,13 @@
             
             sidebar:    '<div id="sidebar" class="ui-dialog ui-widget ui-widget-content ui-corner-all">' +
                         '<div class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix"><span class="ui-dialog-title object-title"></span><a href="#" class="ui-dialog-titlebar-close ui-corner-all" role="button"><span class="ui-icon ui-icon-closethick">close</span></a></div>' +
-                        '<div class="sidebar_image"></div>' +
-                        '<div class="sidebar_info"></div>' +
+                        '<div><div class="sidebar_image side_panel"></div>' +
+                        '<div class="sidebar_info side_panel"></div></div>' +
+                        '<div class="ui-dialog-buttonpane ui-widget-content ui-helper-clearfix clear">' + 
+                        '<span class="tombstring"></span>' +
+                        '<div class="ui-dialog-buttonset"><button title="More details" type="button" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button" aria-disabled="false"><span class="ui-button-text">More</span></button></div>' + 
+                        '</div>' +
+                        '<div id="disabled"></div>' +
                         '</div>',
             
             dialog:     '<div id="dialog" class="ui-dialog ui-widget ui-widget-content ui-corner-all">' +
@@ -226,8 +238,6 @@
                         '<div id="clipboardlist" class="ui-widget ui-state-highlight ui-corner-all hide"><ul class="list"></ul><div class="clearfix"></div></div>' +
                         '</div>',
             
-            disabled:   '<div id="disabled" class="ui-widget-overlay"></div>',
-            
             map:        '<div id="mapwrapper" class="ui-dialog"><div id="mapcanvas"></div></div>',
             
             fsbtn:      '<span id="fs_button" class="ui-state-default ui-corner-all fullscreen"><span class="fullscreen ui-icon ui-icon-arrow-4-diag" title="Toggle full screen"></span></span>'
@@ -258,24 +268,28 @@
                         
                 $('#fullsize').hide();
                 var sidebar = $("#sidebar", wall);
-                
-                sidebar.css({
-                    'width': settings.sidebar_width,
-                    'height': wall.height() - 2*settings.padding,
-                    'top': 0,
-                    'left': wall.width() - (settings.sidebar_width + 2*settings.padding),
-                    'padding': settings.padding
-                });
-                
                 var disabled = $("#disabled", wall);
-                disabled.css({
-                    'width': settings.sidebar_width,
-                    'height': wall.height() - 2*settings.padding,
-                    'top': 0,
-                    'left': wall.width() - (settings.sidebar_width + 2*settings.padding),
-                    'padding': settings.padding,
-                    'z-index': 50
-                }).show();
+                
+                if(!S.fullscreen) {
+                        
+                    sidebar.css(settings.minimized_sidebar).centerVert().centerHoriz();
+                    $(".side_panel", sidebar).width('50%');
+                    $(".sidebar_info", sidebar).height(settings.sidebar_image_size);
+                    
+                } else {
+                    
+                    sidebar.css({
+                        'width': settings.sidebar_width,
+                        'height': wall.height() - 2*settings.padding,
+                        'top': 0,
+                        'left': wall.width() - (settings.sidebar_width + 2*settings.padding),
+                        'padding': settings.padding
+                    });
+                    $(".side_panel", sidebar).width('100%');
+                    
+                }
+                
+                disabled.show();
                 
                 if(!sidebar.is(':visible')) {
                     sidebar.show();
@@ -289,35 +303,38 @@
                         var musobj = json[0].fields;
                         var image_url = settings.images_url + musobj.primary_image_id.substr(0, 6) + "/" + musobj.primary_image_id + settings.sidebar_image_suffix + ".jpg";
                         var objname = musobj.object;
-                        var objtitle = '<span id="objname" class="searchable" title="Search for \'' + objname +'\'">' + objname + '</span>';
+                        //~ var objtitle = '<span id="objname" class="searchable" title="Search for \'' + musobj.object +'\'">' + musobj.object + '</span>';
                         if(musobj.title) {
                             objname += ': ' + musobj.title;
-                            objtitle += ': ' + musobj.title;
+                            //~ objtitle += ': ' + musobj.title;
                         }
                         
                         var sidebar_image    =  '<img src="' + image_url + '" title="' + objname + '" alt="' + objname + '" width="'+ settings.sidebar_image_size +'" height="'+ settings.sidebar_image_size +'" data-objnum="' + musobj.object_number + '">';
-                        $('span.object-title', sidebar).html('<span class="ui-icon ui-icon-search" style="float: left; margin-right: 2px;"></span>'+objtitle);
+                        $('span.object-title', sidebar).html('<span class="ui-icon ui-icon-search" style="float: left; margin-right: 2px;"></span><span id="objname" class="searchable" title="Search for \'' + musobj.object +'\'">' + musobj.object + '</span>');
 
                         var info_html = '';
                         if(settings.show_more_link) {
-                            info_html = '<div class="ui-widget ui-state-highlight ui-corner-all"><div><span class="ui-icon ui-icon-extlink" style="float:left;"></span><a href="' + settings.collections_record_url + musobj.object_number + '">More details</a></div>';
+                            //~ info_html = '<div class="ui-widget ui-state-highlight ui-corner-all"><div><span class="ui-icon ui-icon-extlink" style="float:left;"></span><a href="' + settings.collections_record_url + musobj.object_number + '">More details</a></div>';
                             if(settings.enable_clipboard) {
                                 info_html += '<div><span class="ui-icon ui-icon-copy" style="float:left;"></span><a data-name="' + objname + '" data-objnum="' + musobj.object_number + '" data-imref="' + musobj.primary_image_id + '" class="save" href="#" title="Save this object to your clipboard">Save</a></div></div>';
                             }
                         }
-                        if(typeof(musobj.descriptive_line) != 'undefined' && musobj.descriptive_line !== '' && musobj.descriptive_line != ['Unknown']) { 
-                            info_html += '<div class="ui-widget ui-state-highlight ui-corner-all">' + musobj.descriptive_line + '</div>';
-                        }
-                        info_html += '<div class="ui-widget ui-state-highlight ui-corner-all">';
-                        info_html +=    '<ul>';
-                        for(var k=0; k<settings.tombstone.length; k++) {
-                            var t = settings.tombstone[k][0];
-                            var c = settings.tombstone[k][1];
-                            if(typeof(musobj[c]) != 'undefined' && musobj[c] !== '' && musobj[c] != ['Unknown']) { 
-                                info_html += '<li><strong>'+t + '</strong>: ' + musobj[c] +'</li>'; 
+                        if (S.fullscreen) {
+                            if(typeof(musobj.descriptive_line) != 'undefined' && musobj.descriptive_line !== '' && musobj.descriptive_line != ['Unknown']) { 
+                                info_html += '<div class="ui-widget ui-state-highlight ui-corner-all">' + musobj.descriptive_line + '</div>';
                             }
+                        
+                            info_html += '<div class="ui-widget ui-state-highlight ui-corner-all">';
+                            info_html +=    '<ul>';
+                            for(var k=0; k<settings.tombstone.length; k++) {
+                                var t = settings.tombstone[k][0];
+                                var c = settings.tombstone[k][1];
+                                if(typeof(musobj[c]) != 'undefined' && musobj[c] !== '' && musobj[c] != ['Unknown']) { 
+                                    info_html += '<li><strong>'+t + '</strong>: ' + musobj[c] +'</li>'; 
+                                }
+                            }
+                            info_html        +=  '</ul></div>';
                         }
-                        info_html        +=  '</ul></div>';
                         info_html        += '<div class="ui-widget ui-state-highlight ui-corner-all" id="browse">';
                         info_html        +=  '<ul class="' + settings.tag_style + '">';                            
 
@@ -360,15 +377,24 @@
                         info_html       += '</ul><div class="clearfix"></div></div>';
                         
                         $(".sidebar_image", sidebar).html(sidebar_image);
-                        $(".sidebar_info", sidebar).html(info_html).height(sidebar.height() - $(".sidebar_image").outerHeight() - $(".ui-dialog-titlebar", sidebar).outerHeight()).scrollTop(0);
+                        $(".sidebar_info", sidebar).html(info_html);
+                        $("button", sidebar).data('href', settings.collections_record_url + musobj.object_number);
+                        if(S.fullscreen) {
+                            $(".sidebar_info", sidebar).height(sidebar.height() - $(".sidebar_image").outerHeight() - $(".ui-dialog-titlebar", sidebar).outerHeight()).scrollTop(0);
+                        } else {
+                            $(".sidebar_info", sidebar).height(settings.sidebar_image_size);
+                            var tombstring = objname;
+                            for(var i=0; i < settings.tombstone_string.length; i++) {
+                                tombstring += '; ' + musobj[settings.tombstone_string[i]];
+                            }
+                            $("span.tombstring", sidebar).html(tombstring);
+                        }
                         
-                        // cache the fullsize img
                         var bigimg = new Image();
                         bigimg.src = image_url.replace(settings.sidebar_image_suffix, settings.large_image_suffix);
                         $('#fullsize img', wall).attr('src', bigimg.src);
                         $('#fullsize .ui-dialog-title').html(objname);
                         
-                        // remove disabler overlay
                         disabled.fadeOut();
                         
                     }
@@ -595,7 +621,56 @@
                 return str.charAt(0).toUpperCase() + str.substr(1);
 
             },
-                    
+            
+            toggleFullScreen: function() {
+              
+                var sidebar = $("#sidebar", wall);
+                sidebar.hide();
+                var loading = $('#loading', wall);
+                loading.hide();
+                
+                if (S.fullscreen) {
+                    // shrink
+                    S.fullscreen = false;
+                    $("body").css({'overflow': 'auto'});
+                    wall.prependTo(old_parent)
+                        .animate({
+                        'width': settings.width,
+                        'height': settings.height
+                    }, settings.fullscreen_speed, function() { 
+                        $('#panel').centerHoriz().css({'bottom': 0});
+                        methods.draw(wall);
+                        if(map) {
+                            google.maps.event.trigger(map, "resize");
+                            $('#mapwrapper', wall).centerHoriz().centerVert();
+                        }
+                    });
+                } else {
+                    // expand
+                    S.fullscreen = true;
+                    old_parent = wall.parent();
+                    wall.prependTo($("body"));
+                    $("body").css({'overflow': 'hidden'});
+                    $(window).scrollTop(0);
+                    wall.animate({
+                        'width': $(document).width(),
+                        'height': $(window).height()
+                    }, settings.fullscreen_speed, function() { 
+                        methods.draw(wall);
+                        if(map) {
+                            google.maps.event.trigger(map, "resize");
+                            $('#mapwrapper', wall).centerHoriz().centerVert();
+                        };
+                        if(!$('#panel').is(':visible')) {
+                            $('#panel').show().centerHoriz().css({'bottom': 0});
+                        }
+                        if(!$('#title').is(':visible')) {
+                            $('#title').show();
+                        }
+                    });
+                }
+            },
+            
             draw: function(wall) {
             
                 // before we do anything, let's get the current anchor offset
@@ -952,7 +1027,7 @@
             'top': this.position().top,
             'left': this.position().left
         };
-        settings.fullscreen = false;
+        S.fullscreen = false;
 
         // apply styles to the empty grid
         this.css({
@@ -1046,81 +1121,7 @@
             .delegate('.fullscreen', 'click', function(event) {
                 event.stopImmediatePropagation()
                 event.preventDefault();
-                var sidebar = $("#sidebar", wall);
-                if (settings.fullscreen) {
-                    // shrink
-                    $("body").css({'overflow': 'auto'});
-                    wall.prependTo(old_parent)
-                        .animate({
-                        'width': settings.width,
-                        'height': settings.height
-                    }, settings.fullscreen_speed, function() { 
-                        
-                        if(sidebar.is(':visible')) {
-                            sidebar.animate({
-                                'width': settings.sidebar_width,
-                                'height': wall.height() - 2*settings.padding,
-                                'top': 0,
-                                'left': wall.width() - (settings.sidebar_width + 2*settings.padding),
-                                'padding': settings.padding
-                            }, settings.fullscreen_speed, function() {});
-                        }
-                        
-                        $("#sidebar").hide();
-                        $('#panel').centerHoriz().css({'bottom': 0});
-                        $('#loading').centerHoriz();
-                        settings.fullscreen = false;
-                        methods.draw(wall);
-                        if(map) {
-                            google.maps.event.trigger(map, "resize");
-                            $('#mapwrapper', wall).centerHoriz().centerVert();
-                        }
-                        
-                    });
-                    
-                } else {
-                    // expand
-                    old_parent = wall.parent();
-                    wall.prependTo($("body"));
-                    $("body").css({'overflow': 'hidden'});
-                    $(window).scrollTop(0);
-                    wall.animate({
-                        'width': $(document).width(),
-                        'height': $(window).height()
-                    }, settings.fullscreen_speed, function() { 
-                       
-                        if(sidebar.is(':visible')) {
-                            sidebar.animate({
-                                'width': settings.sidebar_width,
-                                'height': wall.height() - 2*settings.padding,
-                                'top': 0,
-                                'left': wall.width() - (settings.sidebar_width + 2*settings.padding),
-                                'padding': settings.padding
-                            }, settings.fullscreen_speed, function(){
-                                $(".sidebar_info", sidebar).height(sidebar.height() - $(".sidebar_image").height());
-                            });
-                        }
-                        
-                        $('#panel').centerHoriz().css({'bottom': 0});
-                        $('#loading').centerHoriz();
-                        settings.fullscreen = true;
-                        methods.draw(wall);
-                        if(map) {
-                            google.maps.event.trigger(map, "resize");
-                            $('#mapwrapper', wall).centerHoriz().centerVert();
-                        };
-
-                        if(!$('#panel').is(':visible')) {
-                            $('#panel').show();
-                        }
-                        if(!$('#title').is(':visible')) {
-                            $('#title').show();
-                        }
-
-                    });
-                    
-                }
-                
+                methods.toggleFullScreen();
             })
             .delegate('#panel span.zoomin', 'click', function(event) {
                 
@@ -1142,7 +1143,6 @@
                 
                     S.current_size--;
                     methods.resize(S.current_size);
-                   
                     
                 } else {
                     methods.showDialog(wall, settings.alert_msg_zoom_min);
@@ -1287,7 +1287,11 @@
                 event.preventDefault();
                 $(this).parent().parent().hide();
             })
-            .delegate('button', 'click', function(event) {
+            .delegate('#sidebar button', 'click', function(event) {
+                event.preventDefault();
+                window.location = $(this).data('href');
+            })
+            .delegate('#dialog button', 'click', function(event) {
                 event.preventDefault();
                 $('#dialog', wall).hide();
             })
@@ -1334,6 +1338,9 @@
                 };
                 methods.apiStart();
                 $('#panel input[name="search"]', wall).val('New search');
+                if(!S.fullscreen) {
+                    $('#sidebar', wall).fadeOut();
+                }
         
             })
             .delegate('#sidebar img', 'click', settings.event_click_sidebar_img);
