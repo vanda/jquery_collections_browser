@@ -15,7 +15,7 @@
 #panel input { width: 250px; height: 24px; margin: 0; padding: 0; }
 
 #sidebar { z-index: 10; line-height: 1.5em;}
-#sidebar div.ui-dialog-titlebar, #sidebar div.sidebar_info .ui-widget, #sidebar div.sidebar_image img  { margin-bottom: 8px; }
+#sidebar div.ui-dialog-titlebar, #sidebar div.sidebar_info .ui-widget, #sidebar div.sidebar_image img { margin-bottom: 8px; }
 #sidebar div.side_panel { float: left; }
 #sidebar div.sidebar_info { overflow-y: auto; }
 #sidebar div.sidebar_info .ui-widget { padding: 8px; }
@@ -25,6 +25,7 @@ ul.list ul li { margin-left: 1.0em; }
 #sidebar img { cursor: pointer; }
 #sidebar ul li a { text-decoration: none; }
 #sidebar .sidebar-image-zoom { position: relative; bottom: 34px; left: 0; }
+#sidebar button.ui-widget { padding: 0!important; }
 
 #dialog p, #loading p { margin: 8px; }
 #fullsize { width: auto!important; z-index: 30; }
@@ -46,7 +47,7 @@ ul.list ul li { margin-left: 1.0em; }
 
 #fs_button { top: 0; right: 0; cursor: pointer; padding: 4px; }
 
-#disabled { left: 0; top: 0; width: 100%; height: 100%; z-index: 20; background-color: #d1d1d1; opacity: 0.6 }
+#disabled { left: 0; top: 0; width: 100%; height: 100%; z-index: 20; opacity: 0.6; background-color: #d1d1d1; }
 
 .tagcloud { text-align: center; margin: 0; line-height: 3.0em; }
 .tagcloud li { display: inline; margin: 8px; word-wrap: break-word; }

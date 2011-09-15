@@ -198,11 +198,13 @@
                         '<div class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix"><span class="ui-dialog-title object-title"></span><a href="#" class="ui-dialog-titlebar-close ui-corner-all" role="button"><span class="ui-icon ui-icon-closethick">close</span></a></div>' +
                         '<div><div class="sidebar_image side_panel"></div>' +
                         '<div class="sidebar_info side_panel"></div></div>' +
-                        '<div class="ui-dialog-buttonpane ui-widget-content ui-helper-clearfix clear">' + 
+                        
+                        '<div id="disabled"></div>' +
+                        '</div>',
+                        
+            panelbtns:  '<div class="ui-dialog-buttonpane ui-widget-content ui-helper-clearfix clear panelbuttons">' + 
                         '<span class="tombstring"></span>' +
                         '<div class="ui-dialog-buttonset"><button title="More details" type="button" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button" aria-disabled="false"><span class="ui-button-text">More</span></button></div>' + 
-                        '</div>' +
-                        '<div id="disabled"></div>' +
                         '</div>',
             
             dialog:     '<div id="dialog" class="ui-dialog ui-widget ui-widget-content ui-corner-all">' +
@@ -303,6 +305,7 @@
                         var musobj = json[0].fields;
                         var image_url = settings.images_url + musobj.primary_image_id.substr(0, 6) + "/" + musobj.primary_image_id + settings.sidebar_image_suffix + ".jpg";
                         var objname = musobj.object;
+                        var more_url = settings.collections_record_url + musobj.object_number;
                         if(musobj.title) {
                             objname += ': ' + musobj.title;
                         }
@@ -310,30 +313,32 @@
                         var sidebar_image    =  '<img src="' + image_url + '" title="' + objname + '" alt="' + objname + '" width="'+ settings.sidebar_image_size +'" height="'+ settings.sidebar_image_size +'" data-objnum="' + musobj.object_number + '">';
                         $('span.object-title', sidebar).html('<span class="ui-icon ui-icon-search" style="float: left; margin-right: 2px;"></span><span id="objname" class="searchable" title="Search for \'' + musobj.object +'\'">' + musobj.object + '</span>');
 
-                        var info_html = '';
+                        var info = '';
                         if(settings.show_more_link) {
                             if(settings.enable_clipboard) {
-                                info_html += '<div><span class="ui-icon ui-icon-copy" style="float:left;"></span><a data-name="' + objname + '" data-objnum="' + musobj.object_number + '" data-imref="' + musobj.primary_image_id + '" class="save" href="#" title="Save this object to your clipboard">Save</a></div></div>';
+                                info += '<div><span class="ui-icon ui-icon-copy" style="float:left;"></span><a data-name="' + objname + '" data-objnum="' + musobj.object_number + '" data-imref="' + musobj.primary_image_id + '" class="save" href="#" title="Save this object to your clipboard">Save</a></div></div>';
                             }
                         }
                         if (S.fullscreen) {
                             if(typeof(musobj.descriptive_line) != 'undefined' && musobj.descriptive_line !== '' && musobj.descriptive_line != ['Unknown']) { 
-                                info_html += '<div class="ui-widget ui-state-highlight ui-corner-all">' + musobj.descriptive_line + '</div>';
+                                info += '<div class="ui-widget ui-state-highlight ui-corner-all descriptiveline">' + musobj.descriptive_line + '</div>';
                             }
                         
-                            info_html += '<div class="ui-widget ui-state-highlight ui-corner-all">';
-                            info_html +=    '<ul>';
+                            //~ info += '<div class="ui-dialog-buttonset"><button title="More details" type="button" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button" aria-disabled="false"><span class="ui-button-text">More</span></button></div>';
+                        
+                            info += '<div class="ui-widget ui-state-highlight ui-corner-all tombstone">';
+                            info +=    '<ul>';
                             for(var k=0; k<settings.tombstone.length; k++) {
                                 var t = settings.tombstone[k][0];
                                 var c = settings.tombstone[k][1];
                                 if(typeof(musobj[c]) != 'undefined' && musobj[c] !== '' && musobj[c] != ['Unknown']) { 
-                                    info_html += '<li><strong>'+t + '</strong>: ' + musobj[c] +'</li>'; 
+                                    info += '<li><strong>'+t + '</strong>: ' + musobj[c] +'</li>'; 
                                 }
                             }
-                            info_html        +=  '</ul></div>';
+                            info        +=  '</ul></div>';
                         }
-                        info_html        += '<div class="ui-widget ui-state-highlight ui-corner-all" id="browse">';
-                        info_html        +=  '<ul class="' + settings.tag_style + '">';                            
+                        info        += '<div class="ui-widget ui-state-highlight ui-corner-all" id="browse">';
+                        info        +=  '<ul class="' + settings.tag_style + '">';                            
 
                         var lines = 0;
 
@@ -344,8 +349,8 @@
                                 var taxonomy_title = methods.ucfirst(settings.taxonomy[k]);
                                 lines++;
                                 if(settings.tag_style == 'list') {
-                                    info_html += '<li><strong>' + taxonomy_title + '</strong>';
-                                    info_html += '<ul>';
+                                    info += '<li><strong>' + taxonomy_title + '</strong>';
+                                    info += '<ul>';
                                 }
                                 for(var p=0; p < category.length; p++ ) {
                                     // TO DO: algoritmo for tag sizing
@@ -354,32 +359,33 @@
                                     var category_name = methods.ucfirst(cat.fields.name);
                                     if( cat.fields.museumobject_image_count > settings.min_category_count && category_name != 'Unknown') {
                                         lines++;
-                                        info_html += '<li class="size-'+parseInt(s, 10)+'"><a href="#" data-name="' + cat.model.split('.')[1] + '" data-pk="' + cat.pk + '" data-term="' + category_name + '" title="Browse images for \'' + category_name + '\'">' + category_name + '</a>';
+                                        info += '<li class="size-'+parseInt(s, 10)+'"><a href="#" data-name="' + cat.model.split('.')[1] + '" data-pk="' + cat.pk + '" data-term="' + category_name + '" title="Browse images for \'' + category_name + '\'">' + category_name + '</a>';
                                         if(settings.image_counts_in_sidebar) {
-                                            info_html += '&nbsp;(' + cat.fields.museumobject_image_count + ')';
+                                            info += '&nbsp;(' + cat.fields.museumobject_image_count + ')';
                                         }
-                                        info_html += '</li>';
+                                        info += '</li>';
                                     }
                                 }
-                                if(settings.tag_style == 'list') info_html += '</ul>';
-                                info_html += '</li>';
+                                if(settings.tag_style == 'list') info += '</ul>';
+                                info += '</li>';
                             }
                             
                         }
                         
                         if(lines===0) {
-                            info_html += '<li>Sorry, no categories for this object.</li>';
+                            info += '<li>Sorry, no categories for this object.</li>';
                         }
                         
-                        info_html       += '</ul><div class="clearfix"></div></div>';
+                        info       += '</ul><div class="clearfix"></div></div>';
                         
                         $(".sidebar_image", sidebar).html(sidebar_image);
-                        $(".sidebar_info", sidebar).html(info_html);
-                        $("button", sidebar).data('href', settings.collections_record_url + musobj.object_number);
+                        $(".sidebar_info", sidebar).html(info);
                         if(S.fullscreen) {
+                            $(fragments.panelbtns).appendTo($('.sidebar_info', sidebar));
                             var h = sidebar.height() - $(".sidebar_image").outerHeight() - $(".ui-dialog-titlebar", sidebar).outerHeight();
-                            $(".sidebar_info", sidebar).css({'min-height':h}).scrollTop(0);
+                            $(".sidebar_info", sidebar).height(h).scrollTop(0);
                         } else {
+                            $(fragments.panelbtns).appendTo(sidebar);
                             $(".sidebar_info", sidebar).height(settings.sidebar_image_size);
                             var tombstring = objname;
                             for(var i=0; i < settings.tombstone_string.length; i++) {
@@ -387,7 +393,7 @@
                             }
                             $("span.tombstring", sidebar).html(tombstring);
                         }
-                        
+                        $("button", sidebar).data('href', more_url);
                         var bigimg = new Image();
                         bigimg.src = image_url.replace(settings.sidebar_image_suffix, settings.large_image_suffix);
                         $('#fullsize img', wall).attr('src', bigimg.src);
