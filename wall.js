@@ -95,7 +95,7 @@
                 'You can search for similar objects by clicking the object name in the sidebar.',
                 'The search returns a maximum of 1000 objects.',
                 'You can see the list of searches you\'ve done by clicking the toggle history button in the panel.',
-                'Click the map button in the panel to view the current set on a map.'
+                //~ 'Click the map button in the panel to view the current set on a map.'
             ],
             'start_tip': 0, // index of the tip that will be displayed on start
             
@@ -148,7 +148,7 @@
                 ['Materials &amp; techniques', 'materials_techniques'],
                 ['Location', 'location'],
                 ['Place', 'place'],
-                ['History note', 'history_note']
+                ['Description', 'brief_description']
             ],
             
             // fields to include in the footer text of the info window
