@@ -650,6 +650,7 @@
                         'width': $(document).width(),
                         'height': $(window).height()
                     }, settings.fullscreen_speed, function() { 
+                        $('#panel').centerHoriz().css({'bottom': 0});
                         methods.draw(wall);
                         if(map) {
                             google.maps.event.trigger(map, "resize");
