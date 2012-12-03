@@ -110,8 +110,8 @@
                 'name': '',
                 'term': ''
             },
-            'max_results': 250, // the max results we can handle
-            'limit': 50, // how many images to get per api request. Also affects the size of progressbar increments
+            'max_results': 225, // the max results we can handle
+            'limit': 45, // how many images to get per api request. Also affects the size of progressbar increments
             'search_term': '', // term to search the api for
             'category-stub': '', // category to retrieve images from 
             'sidebar_image_suffix': '_jpg_w',
@@ -123,8 +123,8 @@
             'blank_tile': '<li class="blank"></li>',
             
             // nuts and bolts
-            'cache_interval': 50, // how often to cache some images (ms)
-            'fill_interval': 5, // how often to fill tiles from cache (ms)
+            'cache_interval': 500, // how often to cache some images (ms)
+            'fill_interval': 100, // how often to fill tiles from cache (ms)
             
             // list of taxonomy terms to populate the sidebar
             'taxonomy': [
@@ -557,7 +557,7 @@
                 }
                 
                 if(typeof(limit)=='undefined' || isNaN(limit)) {
-                    limit = 1;
+                    limit = 45;
                 }
                 
                 var url, display_term;
@@ -853,7 +853,7 @@
                 if(cache_full) {
                     $.ajax({
                             dataType: 'jsonp',
-                            url: methods.buildUrl(offset, 1),
+                            url: methods.buildUrl(offset, 45),
                             success: function (json) {
                                 var record, obj, objname;
                                 for(var i=0;i<json.records.length;i++) {
